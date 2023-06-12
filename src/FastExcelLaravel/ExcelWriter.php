@@ -27,13 +27,18 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
             }
         }
         $excel = new self($options);
-        if (is_array($sheets)) {
-            foreach ($sheets as $sheetName) {
-                $excel->makeSheet($sheetName);
+        if ($sheets) {
+            if (is_array($sheets)) {
+                foreach ($sheets as $sheetName) {
+                    $excel->makeSheet($sheetName);
+                }
+            }
+            else {
+                $excel->makeSheet((string)$sheets);
             }
         }
         else {
-            $excel->makeSheet($sheets);
+            $excel->makeSheet();
         }
 
         return $excel;

@@ -11,21 +11,23 @@
     ],
     "type": "library",
     "homepage": "https://github.com/aVadim483/fast-excel-laravel",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "avadim\\FastExcelLaravel\\": "./src/FastExcelLaravel"
+        }
+    },
     "require": {
         "php": "^7.4|^8.1",
+        "ext-json": "*",
         "avadim/fast-excel-writer": "^4.0",
         "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
         "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0"
     },
     "require-dev": {
         "orchestra/testbench": "^4.0|^5.0|^6.0",
-        "phpunit/phpunit": "^8.0|^9.0"
-    },
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "avadim\\FastExcelLaravel\\": "./src/FastExcelLaravel"
-        }
+        "phpunit/phpunit": "^8.0|^9.0",
+        "avadim/fast-excel-reader": "^2.2"
     },
     "extra": {
         "laravel": {

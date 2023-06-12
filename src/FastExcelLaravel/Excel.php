@@ -9,8 +9,8 @@ class Excel
 
     }
 
-    public static function create($sheets = null, ?array $options = [])
+    public static function create($sheets = null, ?array $options = []): ExcelWriter
     {
-        return ExcelWriter::create($sheets);
+        return ExcelWriter::create($sheets, $options);
     }
 }

@@ -44,7 +44,7 @@ class SheetWriter extends Sheet
 
     public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): Sheet
     {
-        if ($this->dataRowCount > 0 && $this->headers['header_keys']) {
+        if ($this->dataRowCount > 0 && !empty($this->headers['header_keys'])) {
             $rowData = [];
             foreach ($this->headers['header_keys'] as $key) {
                 if (isset($rowValues[$key])) {
@@ -131,6 +131,7 @@ class SheetWriter extends Sheet
             'rowStyle' => $rowStyle,
             'colStyles' => $colStyles,
         ];
+        $this->lastTouch['ref'] = 'row';
 
         return $this;
     }
