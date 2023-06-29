@@ -4,7 +4,9 @@ Lightweight and very fast XLSX Excel Spreadsheet Writer for Laravel
 
 ## Introduction
 
-This library is a wrapper for avadim/fast-excel-writer, so it's also lightweight, fast, and requires a minimum of memory.
+Exporting data from your Laravel application has never been so fast! Importing models into your Laravel application has never been so easy!
+
+This library is a wrapper for avadim/fast-excel-writer фтв avadim/fast-excel-куфвук, so it's also lightweight, fast, and requires a minimum of memory.
 Using this library, you can export arrays, collections and models to a XLSX-file from your Laravel application.
 
 ## Installation
@@ -80,7 +82,7 @@ $sheet->writeData(function () {
 
 ```
 
-## Advanced usage
+## Advanced usage for data export
 
 See detailed documentation for avadim/fast-excel-laravel here: https://github.com/aVadim483/fast-excel-writer/tree/master#readme
 

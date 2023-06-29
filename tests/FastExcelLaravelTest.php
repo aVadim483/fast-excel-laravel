@@ -1,16 +1,14 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace avadim\FastExcelLaravel;
 
-use Illuminate\Support\Collection;
-use PHPUnit\Framework\TestCase;
-use avadim\FastExcelReader\Excel as ExcelReader;
-use \Illuminate\Filesystem\Filesystem as File;
+require_once __DIR__ . '/FakeModel.php';
 
-//final class FastExcelLaravelTest extends TestCase
+use Illuminate\Support\Collection;
+use avadim\FastExcelReader\Excel as ExcelReader;
+
 final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
 {
     protected ?ExcelReader $excelReader = null;
@@ -24,7 +22,25 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->testStorage = __DIR__ . '/test_storage';
 
         app()->useStoragePath($this->testStorage);
+        $this->setUpDatabase();
     }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        $app['config']->set('database.default', 'sqlite');
+        $app['config']->set('database.connections.sqlite', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+    }
+
+    protected function setUpDatabase()
+    {
+        //$res = $this->artisan('migrate')->run();
+        //$this->loadMigrationsFrom(__DIR__ . '/../database/migrations/000_create_test_models_table.php');
+    }
+
 
     protected function getValue($cell)
     {
@@ -292,4 +308,42 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->endTest($testFileName);
     }
 
+    public function testLoadModel()
+    {
+        $testFileName = 'test_model.xlsx';
+        $excel = Excel::open(storage_path($testFileName));
+        $this->assertEquals('Sheet1', $excel->sheet()->name());
+
+        FakeModel::$storage = [];
+        $excel->loadModels(FakeModel::class);
+        $this->assertCount(4, FakeModel::$storage);
+        $this->assertNull(FakeModel::$storage[0]->name);
+
+        FakeModel::$storage = [];
+        $excel->loadModels(FakeModel::class, true);
+        $this->assertCount(3, FakeModel::$storage);
+        $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
+
+        FakeModel::$storage = [];
+        $excel->loadModels(FakeModel::class, 'b2');
+        $this->assertCount(3, FakeModel::$storage);
+        $this->assertNull(FakeModel::$storage[0]->name);
+
+        FakeModel::$storage = [];
+        $excel->loadModels(FakeModel::class, 'b1', true);
+        $this->assertCount(3, FakeModel::$storage);
+        $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
+
+        FakeModel::$storage = [];
+        $excel->setDateFormat('Y-m-d');
+        $excel->loadModels(FakeModel::class, 'c4', ['B' => 'foo', 'C' => 'bar', 'D' => 'int']);
+        $this->assertEquals('1753-01-31', FakeModel::$storage[0]->bar);
+
+        FakeModel::$storage = [];
+        $excel->loadModels(FakeModel::class, 'b2', ['B' => 'foo', 'C' => 'bar', 'D' => 'int']);
+        $this->assertCount(3, FakeModel::$storage);
+        $this->assertEquals('Captain Jack Sparrow', FakeModel::$storage[2]->foo);
+        $this->assertEquals('1753-01-31', FakeModel::$storage[2]->bar);
+        $this->assertEquals(7239, FakeModel::$storage[2]->int);
+    }
 }

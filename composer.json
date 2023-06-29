@@ -7,7 +7,8 @@
         "PHPExcel",
         "spreadsheet",
         "laravel",
-        "export"
+        "export",
+        "import"
     ],
     "type": "library",
     "homepage": "https://github.com/aVadim483/fast-excel-laravel",
@@ -18,10 +19,10 @@
         }
     },
     "require": {
-        "php": "^7.4|^8.1",
+        "php": ">=7.4",
         "ext-json": "*",
-        "avadim/fast-excel-writer": "^4.0",
-        "avadim/fast-excel-reader": "^2.2",
+        "avadim/fast-excel-writer": "^4.1",
+        "avadim/fast-excel-reader": "^2.3",
         "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
         "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0"
     },
