@@ -9,11 +9,12 @@ class Excel
      */
     public function __construct(?array $options = [])
     {
-
     }
 
     /**
-     * @param $sheets
+     * Create new XLSX-file for export
+     *
+     * @param array|string|null $sheets
      * @param array|null $options
      *
      * @return ExcelWriter
@@ -24,13 +25,15 @@ class Excel
     }
 
     /**
-     * @param $sheets
+     * Open an existing XLSX-file for import
+     *
+     * @param string $file
      * @param array|null $options
      *
      * @return ExcelReader
      */
-    public static function open($sheets = null, ?array $options = []): ExcelReader
+    public static function open(string $file, ?array $options = []): ExcelReader
     {
-        return ExcelReader::open($sheets, $options);
+        return ExcelReader::open($file, $options);
     }
 }

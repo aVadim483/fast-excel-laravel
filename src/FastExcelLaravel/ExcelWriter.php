@@ -55,6 +55,20 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     }
 
     /**
+     * @param $model
+     * @param array|null $rowStyle
+     * @param array|null $cellStyles
+     *
+     * @return $this
+     */
+    public function exportModel($model, array $rowStyle = null, array $cellStyles = null): ExcelWriter
+    {
+        $this->getSheet()->exportModel($model, $rowStyle, $cellStyles);
+
+        return $this;
+    }
+
+    /**
      * @param $data
      *
      * @return $this
