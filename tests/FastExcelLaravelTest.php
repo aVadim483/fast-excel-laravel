@@ -315,32 +315,32 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->assertEquals('Sheet1', $excel->sheet()->name());
 
         FakeModel::$storage = [];
-        $excel->loadModels(FakeModel::class);
+        $excel->importModel(FakeModel::class);
         $this->assertCount(4, FakeModel::$storage);
         $this->assertNull(FakeModel::$storage[0]->name);
 
         FakeModel::$storage = [];
-        $excel->loadModels(FakeModel::class, true);
+        $excel->importModel(FakeModel::class, true);
         $this->assertCount(3, FakeModel::$storage);
         $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
 
         FakeModel::$storage = [];
-        $excel->loadModels(FakeModel::class, 'b2');
+        $excel->importModel(FakeModel::class, 'b2');
         $this->assertCount(3, FakeModel::$storage);
         $this->assertNull(FakeModel::$storage[0]->name);
 
         FakeModel::$storage = [];
-        $excel->loadModels(FakeModel::class, 'b1', true);
+        $excel->importModel(FakeModel::class, 'b1', true);
         $this->assertCount(3, FakeModel::$storage);
         $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
 
         FakeModel::$storage = [];
         $excel->setDateFormat('Y-m-d');
-        $excel->loadModels(FakeModel::class, 'c4', ['B' => 'foo', 'C' => 'bar', 'D' => 'int']);
+        $excel->importModel(FakeModel::class, 'c4', ['B' => 'foo', 'C' => 'bar', 'D' => 'int']);
         $this->assertEquals('1753-01-31', FakeModel::$storage[0]->bar);
 
         FakeModel::$storage = [];
-        $excel->loadModels(FakeModel::class, 'b2', ['B' => 'foo', 'C' => 'bar', 'D' => 'int']);
+        $excel->importModel(FakeModel::class, 'b2', ['B' => 'foo', 'C' => 'bar', 'D' => 'int']);
         $this->assertCount(3, FakeModel::$storage);
         $this->assertEquals('Captain Jack Sparrow', FakeModel::$storage[2]->foo);
         $this->assertEquals('1753-01-31', FakeModel::$storage[2]->bar);

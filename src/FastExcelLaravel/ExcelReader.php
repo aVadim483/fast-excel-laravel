@@ -28,9 +28,9 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
      *
      * @return $this
      */
-    public function loadModels(string $modelClass, $address = null, $columns = null): ExcelReader
+    public function importModel(string $modelClass, $address = null, $columns = null): ExcelReader
     {
-        $this->sheet()->loadModels($modelClass, $address, $columns);
+        $this->sheet()->importModel($modelClass, $address, $columns);
 
         return $this;
     }

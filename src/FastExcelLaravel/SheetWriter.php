@@ -99,7 +99,7 @@ class SheetWriter extends Sheet
      *
      * @return $this
      */
-    public function writeModel($model, array $rowStyle = null, array $cellStyles = null): SheetWriter
+    public function exportModel($model, array $rowStyle = null, array $cellStyles = null): SheetWriter
     {
         $this->writeData(static function() use ($model) {
             foreach ($model::cursor() as $user) {

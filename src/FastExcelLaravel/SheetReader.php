@@ -20,7 +20,7 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
      *
      * @return $this
      */
-    public function loadModels($modelClass, $address = null, $columns = null): SheetReader
+    public function importModel($modelClass, $address = null, $columns = null): SheetReader
     {
         $resultMode = 0;
         if ($columns === true) {
