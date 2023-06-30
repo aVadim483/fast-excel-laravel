@@ -22,7 +22,7 @@
         "php": ">=7.4",
         "ext-json": "*",
         "avadim/fast-excel-writer": "^4.1",
-        "avadim/fast-excel-reader": "^2.3",
+        "avadim/fast-excel-reader": "main-dev",
         "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
         "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0"
     },

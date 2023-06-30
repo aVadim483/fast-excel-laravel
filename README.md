@@ -1,4 +1,4 @@
-# FastExcelLaravel
+ FastExcelLaravel
 Lightweight and very fast XLSX Excel Spreadsheet Writer for Laravel 
 (wrapper for [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer))
 
@@ -100,7 +100,7 @@ $sheet->writeData(function () {
 
 ### Advanced Usage for Data Export
 
-See detailed documentation for avadim/fast-excel-laravel here: https://github.com/aVadim483/fast-excel-writer/tree/master#readme
+See detailed documentation for avadim/fast-excel-writer here: https://github.com/aVadim483/fast-excel-writer/tree/master#readme
 
 ```php
 $excel = \Excel::create('Users');
@@ -149,10 +149,64 @@ $excel->saveTo($testFileName);
 ## Import Data
 
 ### Import a Model
-To import models, you can use method ```importModel()```. By default, the first row is considered to contain the names of the fields
-```txt
-importModel(string $modelClass, $address = null, $columns = null)
+To import models, you can use method ```importModel()```. 
+By default, the first row is considered to contain the names of the fields
+![import.jpg](import.jpg)
+```php
+// Open XLSX-file 
+$excel = Excel::open($file);
+
+// Import row to User model
+$excel->importModel(User::class);
+
+// Done!!!
 ```
+You can define the columns or cells from which you will import
+```php
+// Import row to User model from columns range B:E
+$excel->importModel(User::class, 'B:E');
+
+// Import from cells range
+$excel->importModel(User::class, 'B3:E8');
+
+// Define top left cell only
+$excel->importModel(User::class, 'B3');
+```
+In the last two examples, we also assume that the first row of imported data (row 3) 
+is the names of the fields.
+
+However, you can set the correspondence between columns and field names yourself. 
+Then the first line of the imported data will be records for the model.
+
+```php
+// Import row to User model from columns range B:E
+$excel->importModel(User::class, 'B:E', ['B' => 'name', 'C' => 'birthday', 'D' => 'random', 'E' => 'something']);
+
+// Define top left cell only
+$excel->importModel(User::class, 'B3', ['B' => 'name', 'C' => 'birthday', 'D' => 'random', 'E' => 'something']);
+```
+
+### Advanced Usage for Data Import
+See detailed documentation for avadim/fast-excel-reader here: https://github.com/aVadim483/fast-excel-reader/tree/master#readme
+```php
+$excel = Excel::open($file);
+
+$sheet = $excel->getSheet('Articles');
+foreach ($sheet->nextRow() as $rowNum => $rowData) {
+    $user = User::create([
+        'name' => $rowData['B'],
+        'birthday' => new \Carbon($rowData['C']),
+        'password' => bcrypt($rowData['D']),
+    ]);
+    Article::create([
+        'user_id' => $user->id,
+        'title' => $rowData['E'],
+        'date' => new \Carbon($rowData['F']),
+        'public' => $rowData['G'] === 'yes',
+    ]);
+}
+```
+
 
 ## Do you want to support FastExcelLaravel?
 

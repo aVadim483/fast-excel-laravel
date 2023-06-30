@@ -22,19 +22,17 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
      */
     public function importModel($modelClass, $address = null, $columns = null): SheetReader
     {
-        $resultMode = 0;
-        if ($columns === true) {
-            $resultMode = \avadim\FastExcelReader\Excel::KEYS_FIRST_ROW;
+        $resultMode = \avadim\FastExcelReader\Excel::KEYS_FIRST_ROW;
+        if ($columns === false) {
+            $resultMode = 0;
             $columns = [];
         }
-        elseif ($columns === null && $address === true) {
-            $columns = [];
-            $resultMode = \avadim\FastExcelReader\Excel::KEYS_FIRST_ROW;
+        elseif ($columns) {
+            $resultMode = 0;
         }
         if ($address && is_string($address)) {
             $this->setReadArea($address);
         }
-        $tz = date_default_timezone_get();
         foreach ($this->nextRow($columns, $resultMode) as $rowData) {
             /** @var Model $model */
             $model = new $modelClass;
