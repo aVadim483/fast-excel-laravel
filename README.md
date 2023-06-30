@@ -1,13 +1,24 @@
- FastExcelLaravel
-Lightweight and very fast XLSX Excel Spreadsheet Writer for Laravel 
-(wrapper for [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer))
+# FastExcelLaravel
+
+Lightweight and very fast XLSX Excel Spreadsheet read/write library for Laravel in pure PHP
+(wrapper around [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer) 
+ and [FastExcelReader](https://packagist.org/packages/avadim/fast-excel-reader))
 
 ## Introduction
 
 Exporting data from your Laravel application has never been so fast! Importing models into your Laravel application has never been so easy!
 
-This library is a wrapper for avadim/fast-excel-writer фтв avadim/fast-excel-куфвук, so it's also lightweight, fast, and requires a minimum of memory.
-Using this library, you can export arrays, collections and models to a XLSX-file from your Laravel application.
+This library is a wrapper around **avadim/fast-excel-writer** and **avadim/fast-excel-reader**, so it's also lightweight, fast, and requires a minimum of memory.
+Using this library, you can export arrays, collections and models to a XLSX-file from your Laravel application, and you can import data to Laravel application.
+
+**Features**
+
+* Easily export models, collections and arrays to Excel
+* Export huge datasets with very fast, and using a minimum of memory
+* Сan create multiple sheets and supports basic column, row and cell styling
+* You can set the height of the rows and the width of the columns (including auto width calculation)
+* Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
+* Automatic field detection from imported table headers
 
 ## Installation
 
@@ -28,6 +39,18 @@ $excel->saveTo('path/file.xlsx');
 // or save file to specified disk
 $excel->store('disk', 'path/file.xlsx');
 ```
+
+Jump To:
+* [Export Data](#export-data)
+  * [Export a Model](#export-a-model)
+  * [Export Any Collections and Arrays](#export-any-collections-and-arrays)
+  * [Advanced Usage for Data Export](#advanced-usage-for-data-export)
+* [Import Data](#import-data)
+  * [Import a Model](#import-a-model)
+  * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
+* [More Features](#more-features)
+* [Do you want to support FastExcelLaravel?](#do-you-want-to-support-fastexcellaravel)
+ 
 
 ## Export Data
 
@@ -151,7 +174,9 @@ $excel->saveTo($testFileName);
 ### Import a Model
 To import models, you can use method ```importModel()```. 
 By default, the first row is considered to contain the names of the fields
+
 ![import.jpg](import.jpg)
+
 ```php
 // Open XLSX-file 
 $excel = Excel::open($file);
@@ -192,6 +217,7 @@ See detailed documentation for avadim/fast-excel-reader here: https://github.com
 $excel = Excel::open($file);
 
 $sheet = $excel->getSheet('Articles');
+$sheet->setReadArea('B5');
 foreach ($sheet->nextRow() as $rowNum => $rowData) {
     $user = User::create([
         'name' => $rowData['B'],
@@ -207,6 +233,10 @@ foreach ($sheet->nextRow() as $rowNum => $rowData) {
 }
 ```
 
+## More Features
+You can see more features for export in the documentation for [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer).
+
+You can see more features for import in the documentation for [FastExcelReader](https://packagist.org/packages/avadim/fast-excel-reader))
 
 ## Do you want to support FastExcelLaravel?
 

@@ -345,5 +345,16 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->assertEquals('Captain Jack Sparrow', FakeModel::$storage[2]->foo);
         $this->assertEquals('1753-01-31', FakeModel::$storage[2]->bar);
         $this->assertEquals(7239, FakeModel::$storage[2]->int);
+
+        $sheet = $excel->sheet();
+        $sheet->setReadArea('b5');
+        $result = [];
+        foreach ($sheet->nextRow() as $rowNum => $rowData) {
+            $result[$rowNum] = $rowData;
+        }
+        $this->assertCount(3, $result);
+        $this->assertEquals('James Bond', $result[5]['B']);
+        $this->assertEquals('Ellen Louise Ripley', $result[6]['B']);
+        $this->assertEquals('Captain Jack Sparrow', $result[7]['B']);
     }
 }
