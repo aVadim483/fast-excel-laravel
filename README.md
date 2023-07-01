@@ -67,13 +67,14 @@ $sheet->exportModel(Users::class);
 $excel->saveTo('path/file.xlsx');
 ```
 The following code will write the field names and styles (font and borders) to the first row, and then export all the data of the User model
+
 ```php
 
 // Create workbook with sheet named 'Users'
 $excel = \Excel::create('Users');
 
 // Write users with field names in the first row
-$sheet->withHeaders()
+$sheet->withHeadings()
     ->applyFontStyleBold()
     ->applyBorder('thin')
     ->exportModel(Users::class);
@@ -161,6 +162,9 @@ $area->withRange('a4:d5')
 // Write area to sheet
 $sheet->writeAreas();
 
+// You can set value formats for some fields
+$sheet->setFieldFormats(['birthday' => '@date', 'number' => '@integer']);
+
 // Write data to sheet
 $sheet->writeData($data);
 
@@ -187,15 +191,17 @@ $excel->importModel(User::class);
 // Done!!!
 ```
 You can define the columns or cells from which you will import
+
+![import2.jpg](import2.jpg)
 ```php
 // Import row to User model from columns range B:E
-$excel->importModel(User::class, 'B:E');
+$excel->importModel(User::class, 'B:D');
 
 // Import from cells range
-$excel->importModel(User::class, 'B3:E8');
+$excel->importModel(User::class, 'B4:D7');
 
 // Define top left cell only
-$excel->importModel(User::class, 'B3');
+$excel->importModel(User::class, 'B4');
 ```
 In the last two examples, we also assume that the first row of imported data (row 3) 
 is the names of the fields.
@@ -205,10 +211,10 @@ Then the first line of the imported data will be records for the model.
 
 ```php
 // Import row to User model from columns range B:E
-$excel->importModel(User::class, 'B:E', ['B' => 'name', 'C' => 'birthday', 'D' => 'random', 'E' => 'something']);
+$excel->importModel(User::class, 'B:D', ['B' => 'name', 'C' => 'birthday', 'D' => 'random']);
 
 // Define top left cell only
-$excel->importModel(User::class, 'B3', ['B' => 'name', 'C' => 'birthday', 'D' => 'random', 'E' => 'something']);
+$excel->importModel(User::class, 'B5', ['B' => 'name', 'C' => 'birthday', 'D' => 'random']);
 ```
 
 ### Advanced Usage for Data Import

@@ -86,9 +86,9 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
     {
         $id = 0;
         return [
-            ['id' => $id++, 'integer' => 4573, 'date' => '1900-02-14', 'name' => 'James Bond'],
-            ['id' => $id++, 'integer' => 982630, 'date' => '2179-08-12', 'name' => 'Ellen Louise Ripley'],
-            ['id' => $id++, 'integer' => 7239, 'date' => '1753-01-31', 'name' => 'Captain Jack Sparrow'],
+            ['id' => ++$id, 'integer' => 4573, 'date' => '1900-02-14', 'name' => 'James Bond'],
+            ['id' => ++$id, 'integer' => 982630, 'date' => '2179-08-12', 'name' => 'Ellen Louise Ripley'],
+            ['id' => ++$id, 'integer' => 7239, 'date' => '1753-01-31', 'name' => 'Captain Jack Sparrow'],
         ];
     }
 
@@ -112,7 +112,7 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
     }
 
 
-    protected function startTest($testFileName, $sheets = []): ExcelWriter
+    protected function startExportTest($testFileName, $sheets = []): ExcelWriter
     {
         if (file_exists($testFileName)) {
             unlink($testFileName);
@@ -124,7 +124,7 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         return Excel::create($sheets);
     }
 
-    protected function endTest($testFileName)
+    protected function endExportTest($testFileName)
     {
         $this->excelReader = null;
         $this->cells = [];
@@ -137,10 +137,10 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         }
     }
 
-    public function testArray()
+    public function testExportArray()
     {
         $testFileName = __DIR__ . '/test1.xlsx';
-        $excel = $this->startTest($testFileName);
+        $excel = $this->startExportTest($testFileName);
 
         /** @var SheetWriter $sheet */
         $sheet = $excel->getSheet();
@@ -153,19 +153,19 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
 
         $this->assertEquals(array_values($data[0]), $this->getValues('A1', 'B1', 'C1', 'D1'));
 
-        $this->endTest($testFileName);
+        $this->endExportTest($testFileName);
     }
 
-    public function testArrayWithHeaders()
+    public function testExportArrayWithHeaders()
     {
         $testFileName = __DIR__ . '/test2.xlsx';
-        $excel = $this->startTest($testFileName);
+        $excel = $this->startExportTest($testFileName);
 
         /** @var SheetWriter $sheet */
         $sheet = $excel->getSheet();
 
         $data = $this->getDataArray();
-        $sheet->withHeaders()->writeData($data);
+        $sheet->withHeadings()->writeData($data);
         $excel->save($testFileName);
 
         $this->read($testFileName);
@@ -174,13 +174,13 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->assertEquals(array_keys($row), $this->getValues('A1', 'B1', 'C1', 'D1'));
         $this->assertEquals(array_values($row), $this->getValues('A3', 'B3', 'C3', 'D3'));
 
-        $this->endTest($testFileName);
+        $this->endExportTest($testFileName);
     }
 
-    public function testCollection()
+    public function testExportCollection()
     {
         $testFileName = __DIR__ . '/test3.xlsx';
-        $excel = $this->startTest($testFileName);
+        $excel = $this->startExportTest($testFileName);
 
         /** @var SheetWriter $sheet */
         $sheet = $excel->getSheet();
@@ -193,18 +193,18 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
 
         $this->assertEquals(array_values($data[0]), $this->getValues('A1', 'B1', 'C1', 'D1'));
 
-        $this->endTest($testFileName);
+        $this->endExportTest($testFileName);
     }
 
-    public function testCollectionWithHeaders()
+    public function testExportCollectionWithHeaders()
     {
         $testFileName = 'test4.xlsx';
-        $excel = $this->startTest($testFileName);
+        $excel = $this->startExportTest($testFileName);
 
         /** @var SheetWriter $sheet */
         $sheet = $excel->getSheet();
 
-        $sheet->withHeaders(['date', 'name'])
+        $sheet->withHeadings(['date', 'name'])
             ->applyFontStyleBold()
             ->applyBorder('thin')
             ->writeData(collect($this->getDataCollectionStd()));
@@ -214,13 +214,13 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
 
         $this->assertEquals(['1753-01-31', 'Captain Jack Sparrow', null, null], $this->getValues('A4', 'B4', 'C4', 'D4'));
 
-        $this->endTest($testFileName);
+        $this->endExportTest($testFileName);
     }
 
-    public function testMultipleSheets()
+    public function testExportMultipleSheets()
     {
         $testFileName = 'test5.xlsx';
-        $excel = $this->startTest($testFileName);
+        $excel = $this->startExportTest($testFileName);
 
         $sheet = $excel->makeSheet('Collection');
         $collection = collect([
@@ -261,13 +261,13 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->cells = $this->excelReader->readRows(false, null, true);
         $this->assertEquals(9, $this->getValue('C3'));
 
-        $this->endTest($testFileName);
+        $this->endExportTest($testFileName);
     }
 
-    public function testAdvanced()
+    public function testExportAdvanced()
     {
         $testFileName = 'test6.xlsx';
-        $excel = $this->startTest($testFileName);
+        $excel = $this->startExportTest($testFileName);
 
         /** @var SheetWriter $sheet */
         $sheet = $excel->getSheet();
@@ -305,10 +305,10 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
 
         $this->assertEquals([982630, '2179-08-12', 'Ellen Louise Ripley', null], $this->getValues('B7', 'C7', 'D7', 'e7'));
 
-        $this->endTest($testFileName);
+        $this->endExportTest($testFileName);
     }
 
-    public function testLoadModel()
+    public function testImportModel()
     {
         $testFileName = 'test_model.xlsx';
         $excel = Excel::open(storage_path($testFileName));
@@ -357,4 +357,23 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->assertEquals('Ellen Louise Ripley', $result[6]['B']);
         $this->assertEquals('Captain Jack Sparrow', $result[7]['B']);
     }
+
+
+    public function testExportArray0()
+    {
+        $testFileName = __DIR__ . '/test0.xlsx';
+        $excel = $this->startExportTest($testFileName);
+
+        /** @var SheetWriter $sheet */
+        $sheet = $excel->getSheet();
+
+        $data = $this->getDataArray();
+        $sheet->withHeadings()->setFieldFormats(['date' => '@date'])->writeData($data);
+        $excel->save($testFileName);
+
+        $this->assertTrue(file_exists($testFileName));
+
+        //$this->endExportTest($testFileName);
+    }
+
 }

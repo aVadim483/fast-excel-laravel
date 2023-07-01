@@ -3,11 +3,12 @@
 namespace avadim\FastExcelLaravel;
 
 use avadim\FastExcelWriter\Sheet;
+use avadim\FastExcelWriter\Style;
 use Illuminate\Support\Collection;
 
 class SheetWriter extends Sheet
 {
-    private ?array $headers = null;
+    private array $headers = [];
     private int $dataRowCount = 0;
 
     protected function _toArray($record)
@@ -36,9 +37,9 @@ class SheetWriter extends Sheet
             $this->headers['header_values'] = $this->headers['header_keys'];
         }
 
-        $row = array_combine($this->headers['header_keys'], $this->headers['header_values']);
+        //$row = array_combine($this->headers['header_keys'], $this->headers['header_values']);
         $row = $this->headers['header_values'];
-        $this->writeHeader($row, $this->headers['rowStyle'], $this->headers['colStyles']);
+        $this->writeHeader($row, $this->headers['row_style'], $this->headers['col_styles']);
         ++$this->dataRowCount;
     }
 
@@ -48,7 +49,7 @@ class SheetWriter extends Sheet
             $rowData = [];
             foreach ($this->headers['header_keys'] as $key) {
                 if (isset($rowValues[$key])) {
-                    $rowData[] = $rowValues[$key];
+                    $rowData[$key] = $rowValues[$key];
                 }
                 else {
                     $rowData[] = null;
@@ -56,26 +57,27 @@ class SheetWriter extends Sheet
             }
         }
         else {
-            $rowData = array_values($rowValues);
+            $rowData = $rowValues;
         }
+
         return parent::writeRow($rowData, $rowStyle, $cellStyles);
     }
 
     /**
      * @param $data
      * @param array|null $rowStyle
-     * @param array|null $cellStyles
+     * @param array|null $colStyles
      *
      * @return $this
      */
-    public function writeData($data, array $rowStyle = null, array $cellStyles = null): SheetWriter
+    public function writeData($data, array $rowStyle = null, array $colStyles = null): SheetWriter
     {
         if (is_array($data) || ($data instanceof Collection)) {
             foreach ($data as $record) {
                 if ($this->dataRowCount === 0 && $this->headers) {
                     $this->_writeHeader($record);
                 }
-                $this->writeRow($this->_toArray($record), $rowStyle, $cellStyles);
+                $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
                 ++$this->dataRowCount;
             }
         }
@@ -84,7 +86,7 @@ class SheetWriter extends Sheet
                 if ($this->dataRowCount === 0 && $this->headers) {
                     $this->_writeHeader($record);
                 }
-                $this->writeRow($this->_toArray($record), $rowStyle, $cellStyles);
+                $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
                 ++$this->dataRowCount;
             }
         }
@@ -95,22 +97,22 @@ class SheetWriter extends Sheet
     /**
      * @param $model
      * @param array|null $rowStyle
-     * @param array|null $cellStyles
+     * @param array|null $colStyles
      *
      * @return $this
      */
-    public function exportModel($model, array $rowStyle = null, array $cellStyles = null): SheetWriter
+    public function exportModel($model, array $rowStyle = null, array $colStyles = null): SheetWriter
     {
         $this->writeData(static function() use ($model) {
             foreach ($model::cursor() as $user) {
                 yield $user;
             }
-        }, $rowStyle, $cellStyles);
+        }, $rowStyle, $colStyles);
 
         return $this;
     }
 
-    public function withHeaders(?array $headers = [], ?array $rowStyle = [], ?array $colStyles = []): SheetWriter
+    public function withHeadings(?array $headers = [], ?array $rowStyle = [], ?array $colStyles = []): SheetWriter
     {
         $headerKeys = $headerValues = [];
         if ($headers) {
@@ -128,8 +130,8 @@ class SheetWriter extends Sheet
         $this->headers = [
             'header_keys' => $headerKeys,
             'header_values' => $headerValues,
-            'rowStyle' => $rowStyle,
-            'colStyles' => $colStyles,
+            'row_style' => $rowStyle,
+            'col_styles' => $colStyles,
         ];
         $this->lastTouch['ref'] = 'row';
 

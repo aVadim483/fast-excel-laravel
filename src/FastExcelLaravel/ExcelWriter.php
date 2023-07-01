@@ -6,6 +6,9 @@ use Illuminate\Support\Collection;
 
 class ExcelWriter  extends \avadim\FastExcelWriter\Excel
 {
+    /** @var array SheetWriter[] */
+    protected array $sheets = [];
+
     /**
      * @param string|array $sheets
      * @param array|null $options
@@ -15,7 +18,7 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     public static function create($sheets = null, ?array $options = []): ExcelWriter
     {
         if (empty($options['temp_dir'])) {
-            $tempDir = storage_path('app/tmp/excel');
+            $tempDir = storage_path('app/tmp/fast-excel');
             if(!\File::isDirectory($tempDir)) {
                 \File::makeDirectory($tempDir, 0777, true, true);
             }
