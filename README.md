@@ -30,14 +30,23 @@ composer require avadim/fast-excel-laravel
 And then you can use facade ```Excel```
 
 ```php
-// Create workbook
+// Create workbook...
 $excel = \Excel::create();
-// do something...
+
+// export model...
+$sheet->->withHeadings()->exportModel(Users::class);
+
 // and save XLSX-file to default storage
 $excel->saveTo('path/file.xlsx');
 
 // or save file to specified disk
 $excel->store('disk', 'path/file.xlsx');
+
+// Open saved workbook
+$excel = \Excel::open(storage_path('path/file.xlsx'));
+
+// import records to database
+$excel->importModel(User::class);
 ```
 
 Jump To:
