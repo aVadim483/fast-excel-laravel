@@ -84,12 +84,7 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
 
     protected function getDataArray(): array
     {
-        $id = 0;
-        return [
-            ['id' => ++$id, 'integer' => 4573, 'date' => '1900-02-14', 'name' => 'James Bond'],
-            ['id' => ++$id, 'integer' => 982630, 'date' => '2179-08-12', 'name' => 'Ellen Louise Ripley'],
-            ['id' => ++$id, 'integer' => 7239, 'date' => '1753-01-31', 'name' => 'Captain Jack Sparrow'],
-        ];
+        return include __DIR__ . '/FakeData.php';
     }
 
     protected function getDataCollectionStd(): Collection
@@ -120,6 +115,7 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         elseif (file_exists(storage_path($testFileName))) {
             unlink(storage_path($testFileName));
         }
+        FakeModel::$storage = [];
 
         return Excel::create($sheets);
     }
@@ -315,20 +311,20 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
         $this->assertEquals('Sheet1', $excel->sheet()->name());
 
         FakeModel::$storage = [];
-        $excel->importModel(FakeModel::class);
+        $excel->withHeadings()->importModel(FakeModel::class);
         $this->assertCount(3, FakeModel::$storage);
         $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
 
         FakeModel::$storage = [];
         $excel->setDateFormat('Y-m-d');
-        $excel->importModel(FakeModel::class, 'B4', ['A' => 'foo', 'B' => 'bar', 'C' => 'int']);
+        $excel->mapping(['A' => 'foo', 'B' => 'bar', 'C' => 'int'])->importModel(FakeModel::class, 'B4');
         $this->assertEquals('1753-01-31', FakeModel::$storage[0]->bar);
 
         $testFileName = 'test_model2.xlsx';
         $excel = Excel::open(storage_path($testFileName));
 
         FakeModel::$storage = [];
-        $excel->importModel(FakeModel::class, 'b4');
+        $excel->withHeadings()->importModel(FakeModel::class, 'b4');
         $this->assertCount(3, FakeModel::$storage);
         $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
 
@@ -359,21 +355,83 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
     }
 
 
-    public function testExportArray0()
+    public function testExportImport()
     {
-        $testFileName = __DIR__ . '/test0.xlsx';
-        $excel = $this->startExportTest($testFileName);
+        $data = $this->getDataArray();
+        $testFileName = __DIR__ . '/test_io.xlsx';
 
-        /** @var SheetWriter $sheet */
+        // ** 1 ** mapping import
+        FakeModel::$storage = [];
+        $excel = $this->startExportTest($testFileName);
         $sheet = $excel->getSheet();
 
-        $data = $this->getDataArray();
-        $sheet->withHeadings()->setFieldFormats(['date' => '@date'])->writeData($data);
+        $sheet->exportModel(FakeModel::class);
         $excel->save($testFileName);
 
         $this->assertTrue(file_exists($testFileName));
 
-        //$this->endExportTest($testFileName);
+        $excel = Excel::open($testFileName);
+        $sheet = $excel->getSheet();
+        $sheet->mapping(function ($record) {
+            return [
+                'id' => $record['A'], 'integer' => $record['B'], 'date' => $record['C'], 'name' => $record['D'],
+            ];
+        })->importModel(FakeModel::class);
+        $this->assertEquals($data, FakeModel::storageArray());
+
+        // ** 2 ** mapping export/import
+        FakeModel::$storage = [];
+        $excel = $this->startExportTest($testFileName);
+        $sheet = $excel->getSheet();
+
+        $sheet->mapping(function($model) {
+            return [
+                'id' => $model->id, 'integer' => $model->integer, 'date' => $model->date, 'name' => $model->name,
+            ];
+        })->exportModel(FakeModel::class);
+        $excel->save($testFileName);
+
+        $this->assertTrue(file_exists($testFileName));
+
+        $excel = Excel::open($testFileName);
+        $sheet = $excel->getSheet();
+        $sheet->mapping(function ($record) {
+            return [
+                'id' => $record['A'], 'integer' => $record['B'], 'date' => $record['C'], 'name' => $record['D'],
+            ];
+        })->importModel(FakeModel::class);
+        $this->assertEquals($data, FakeModel::storageArray());
+
+        // ** 3 ** export/import with heading
+        $excel = $this->startExportTest($testFileName);
+
+        $sheet = $excel->getSheet();
+        $sheet->withHeadings()->exportModel(FakeModel::class);
+        $excel->save($testFileName);
+
+        $this->assertTrue(file_exists($testFileName));
+
+        $excel = Excel::open($testFileName);
+        $sheet = $excel->getSheet();
+        $sheet->withHeadings()->importModel(FakeModel::class);
+        $this->assertEquals($data, FakeModel::storageArray());
+
+        // ** 4 ** format dates
+        $excel = $this->startExportTest($testFileName);
+
+        $sheet = $excel->getSheet();
+        $sheet->withHeadings()->setFieldFormats(['date' => '@date'])->exportModel(FakeModel::class);
+        $excel->save($testFileName);
+
+        $this->assertTrue(file_exists($testFileName));
+
+        $excel = Excel::open($testFileName);
+        $excel->setDateFormat('Y-m-d');
+        $sheet = $excel->getSheet();
+        $sheet->withHeadings()->importModel(FakeModel::class);
+        $this->assertEquals($data, FakeModel::storageArray());
+
+        $this->endExportTest($testFileName);
     }
 
 }

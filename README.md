@@ -19,6 +19,7 @@ Using this library, you can export arrays, collections and models to a XLSX-file
 * You can set the height of the rows and the width of the columns (including auto width calculation)
 * Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
 * Automatic field detection from imported table headers
+* Mapping import/export data
 
 ## Installation
 
@@ -34,7 +35,7 @@ And then you can use facade ```Excel```
 $excel = \Excel::create();
 
 // export model...
-$sheet->->withHeadings()->exportModel(Users::class);
+$sheet->withHeadings()->exportModel(Users::class);
 
 // and save XLSX-file to default storage
 $excel->saveTo('path/file.xlsx');
@@ -46,17 +47,19 @@ $excel->store('disk', 'path/file.xlsx');
 $excel = \Excel::open(storage_path('path/file.xlsx'));
 
 // import records to database
-$excel->importModel(User::class);
+$excel->withHeadings()->importModel(User::class);
 ```
 
 Jump To:
 * [Export Data](#export-data)
   * [Export a Model](#export-a-model)
   * [Export Any Collections and Arrays](#export-any-collections-and-arrays)
+  * [Mapping Export Data](#mapping-export-data)
   * [Advanced Usage for Data Export](#advanced-usage-for-data-export)
 * [Import Data](#import-data)
   * [Import a Model](#import-a-model)
   * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
+  * [Mapping Import Data](#mapping-import-data)
 * [More Features](#more-features)
 * [Do you want to support FastExcelLaravel?](#do-you-want-to-support-fastexcellaravel)
  
@@ -64,7 +67,7 @@ Jump To:
 ## Export Data
 
 ### Export a Model
-Easy and fast export of a model. This way you export only model data without any styling 
+Easy and fast export of a model. This way you export only model data without headers and without any styling 
 ```php
 
 // Create workbook with sheet named 'Users'
@@ -91,6 +94,21 @@ $sheet->withHeadings()
 $excel->saveTo('path/file.xlsx');
 ```
 
+### Mapping Export Data
+
+You can map the data that needs to be added as row
+
+```php
+$sheet = $excel->getSheet();
+$sheet->mapping(function($model) {
+    return [
+        'id' => $model->id, 'date' => $model->created_at, 'name' => $model->first_name . $model->last_name,
+    ];
+})->exportModel(User::class);
+$excel->save($testFileName);
+
+```
+
 ### Export Any Collections and Arrays
 ```php
 // Create workbook with sheet named 'Users'
@@ -99,6 +117,11 @@ $excel = \Excel::create('Users');
 $sheet = $excel->getSheet();
 // Get users as collection
 $users = User::where('age', '>', 35)->get();
+
+// Write attribute names
+$sheet->writeRow(array_keys(User::getAttributes()));
+
+// Write all selected records
 $sheet->writeData($users);
 
 $sheet = $excel->makeSheet('Records');
@@ -186,7 +209,7 @@ $excel->saveTo($testFileName);
 
 ### Import a Model
 To import models, you can use method ```importModel()```. 
-By default, the first row is considered to contain the names of the fields
+If the first row contains the names of the fields you can apply these using method ```withHeadings()``` 
 
 ![import.jpg](import.jpg)
 
@@ -194,35 +217,45 @@ By default, the first row is considered to contain the names of the fields
 // Open XLSX-file 
 $excel = Excel::open($file);
 
-// Import row to User model
-$excel->importModel(User::class);
+// Import a workbook to User model using the first row as attribute names
+$excel->withHeadings()->importModel(User::class);
 
 // Done!!!
 ```
 You can define the columns or cells from which you will import
 
+```php
+// Import row to User model from columns range A:B - only 'name' and 'birthday'
+$excel->withHeadings()->importModel(User::class, 'A:B');
+```
+
 ![import2.jpg](import2.jpg)
 ```php
-// Import row to User model from columns range B:E
-$excel->importModel(User::class, 'B:D');
-
 // Import from cells range
-$excel->importModel(User::class, 'B4:D7');
+$excel->withHeadings()->importModel(User::class, 'B4:D7');
 
 // Define top left cell only
-$excel->importModel(User::class, 'B4');
+$excel->withHeadings()->importModel(User::class, 'B4');
 ```
-In the last two examples, we also assume that the first row of imported data (row 3) 
-is the names of the fields.
+In the last two examples, we also assume that the first row of imported data (row 4) 
+is the names of the attributes.
 
-However, you can set the correspondence between columns and field names yourself. 
-Then the first line of the imported data will be records for the model.
+### Mapping Import Data
+
+However, you can set the correspondence between columns and field names yourself.
 
 ```php
 // Import row to User model from columns range B:E
-$excel->importModel(User::class, 'B:D', ['B' => 'name', 'C' => 'birthday', 'D' => 'random']);
+$excel->mapping(function ($record) {
+    return [
+        'id' => $record['A'], 'name' => $record['B'], 'birthday' => $record['C'], 'random' => $record['D'],
+    ];
+})->importModel(User::class, 'B:D');
 
 // Define top left cell only
+$excel->mapping(['B' => 'name', 'C' => 'birthday', 'D' => 'random'])->importModel(User::class, 'B5');
+
+// Define top left cell only (shorter way)
 $excel->importModel(User::class, 'B5', ['B' => 'name', 'C' => 'birthday', 'D' => 'random']);
 ```
 

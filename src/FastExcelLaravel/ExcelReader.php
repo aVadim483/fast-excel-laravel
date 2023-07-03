@@ -22,6 +22,30 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
     }
 
     /**
+     * @param array|null $headers
+     *
+     * @return $this
+     */
+    public function withHeadings(?array $headers = []): ExcelReader
+    {
+        $this->sheet()->withHeadings($headers);
+
+        return $this;
+    }
+
+    /**
+     * @param $callback
+     *
+     * @return $this
+     */
+    public function mapping($callback): ExcelReader
+    {
+        $this->sheet()->mapping($callback);
+
+        return $this;
+    }
+
+    /**
      * @param string $modelClass
      * @param string|bool|null $address
      * @param array|bool|null $columns

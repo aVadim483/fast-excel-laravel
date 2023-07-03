@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 
 class SheetWriter extends Sheet
 {
+    private $mappingCallback = null;
+
     private array $headers = [];
     private int $dataRowCount = 0;
 
@@ -77,6 +79,9 @@ class SheetWriter extends Sheet
                 if ($this->dataRowCount === 0 && $this->headers) {
                     $this->_writeHeader($record);
                 }
+                if ($this->mappingCallback) {
+                    $record = call_user_func($this->mappingCallback, $record);
+                }
                 $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
                 ++$this->dataRowCount;
             }
@@ -85,6 +90,9 @@ class SheetWriter extends Sheet
             foreach ($data() as $record) {
                 if ($this->dataRowCount === 0 && $this->headers) {
                     $this->_writeHeader($record);
+                }
+                if ($this->mappingCallback) {
+                    $record = call_user_func($this->mappingCallback, $record);
                 }
                 $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
                 ++$this->dataRowCount;
@@ -108,6 +116,7 @@ class SheetWriter extends Sheet
                 yield $user;
             }
         }, $rowStyle, $colStyles);
+        $this->headers = [];
 
         return $this;
     }
@@ -134,6 +143,18 @@ class SheetWriter extends Sheet
             'col_styles' => $colStyles,
         ];
         $this->lastTouch['ref'] = 'row';
+
+        return $this;
+    }
+
+    /**
+     * @param $callback
+     *
+     * @return $this
+     */
+    public function mapping($callback): SheetWriter
+    {
+        $this->mappingCallback = $callback;
 
         return $this;
     }
