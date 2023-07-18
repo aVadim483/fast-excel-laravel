@@ -292,5 +292,6 @@ if you find this package useful you can support and donate to me for a cup of co
 
 * USDT (TRC20) TSsUFvJehQBJCKeYgNNR1cpswY6JZnbZK7
 * USDT (ERC20) 0x5244519D65035aF868a010C2f68a086F473FC82b
+* ETH 0x5244519D65035aF868a010C2f68a086F473FC82b 
 
-Or just give me star on GitHub :)
+Or just give me a star on GitHub :)
