@@ -58,8 +58,8 @@ Jump To:
   * [Advanced Usage for Data Export](#advanced-usage-for-data-export)
 * [Import Data](#import-data)
   * [Import a Model](#import-a-model)
-  * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
   * [Mapping Import Data](#mapping-import-data)
+  * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
 * [More Features](#more-features)
 * [Do you want to support FastExcelLaravel?](#do-you-want-to-support-fastexcellaravel)
  
