@@ -401,6 +401,12 @@ final class FastExcelLaravelTest extends \Orchestra\Testbench\TestCase
             ];
         })->importModel(FakeModel::class);
         $this->assertEquals($data, FakeModel::storageArray());
+    }
+
+    public function testExportImportHead()
+    {
+        $data = $this->getDataArray();
+        $testFileName = __DIR__ . '/test_io.xlsx';
 
         // ** 3 ** export/import with heading
         $excel = $this->startExportTest($testFileName);
