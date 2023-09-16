@@ -8,10 +8,12 @@ use Illuminate\Support\Collection;
 
 class SheetWriter extends Sheet
 {
+    /** @var mixed|null  */
     private $mappingCallback = null;
 
     private array $headers = [];
     private int $dataRowCount = 0;
+
 
     protected function _toArray($record)
     {
@@ -121,6 +123,13 @@ class SheetWriter extends Sheet
         return $this;
     }
 
+    /**
+     * @param array|null $headers
+     * @param array|null $rowStyle
+     * @param array|null $colStyles
+     *
+     * @return $this
+     */
     public function withHeadings(?array $headers = [], ?array $rowStyle = [], ?array $colStyles = []): SheetWriter
     {
         $headerKeys = $headerValues = [];

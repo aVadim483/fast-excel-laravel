@@ -21,8 +21,8 @@
     "require": {
         "php": ">=7.4",
         "ext-json": "*",
-        "avadim/fast-excel-writer": "^4.4",
-        "avadim/fast-excel-reader": "^2.8",
+        "avadim/fast-excel-writer": "^4.6",
+        "avadim/fast-excel-reader": "^2.9",
         "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
         "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0"
     },

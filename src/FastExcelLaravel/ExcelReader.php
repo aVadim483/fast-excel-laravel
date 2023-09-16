@@ -4,13 +4,8 @@ namespace avadim\FastExcelLaravel;
 
 class ExcelReader extends \avadim\FastExcelReader\Excel
 {
-    public static function createSheet(string $sheetName, $sheetId, $file, $path): SheetReader
-    {
-        return new SheetReader($sheetName, $sheetId, $file, $path);
-    }
-
     /**
-     * Open XLSX file
+     * Open XLSX file for import
      *
      * @param string $file
      *
@@ -19,6 +14,21 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
     public static function open(string $file): ExcelReader
     {
         return new self($file);
+    }
+
+    /**
+     * Create SheetReader instance
+     *
+     * @param string $sheetName
+     * @param $sheetId
+     * @param $file
+     * @param $path
+     *
+     * @return SheetReader
+     */
+    public static function createSheet(string $sheetName, $sheetId, $file, $path): SheetReader
+    {
+        return new SheetReader($sheetName, $sheetId, $file, $path);
     }
 
     /**

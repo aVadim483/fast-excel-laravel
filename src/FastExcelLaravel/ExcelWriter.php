@@ -10,6 +10,8 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     protected array $sheets = [];
 
     /**
+     * Create XLSX for export
+     *
      * @param string|array $sheets
      * @param array|null $options
      *
@@ -48,6 +50,8 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     }
 
     /**
+     * Create SheetWriter instance
+     *
      * @param string $sheetName
      *
      * @return SheetWriter
@@ -56,6 +60,20 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     {
         return new SheetWriter($sheetName);
     }
+
+    /**
+     * Returns sheet by number or name of sheet.
+     * Return the first sheet if number or name omitted
+     *
+     * @param int|string|null $index - number or name of sheet
+     *
+     * @return SheetWriter
+     */
+    public function sheet($index = null): SheetWriter
+    {
+        return parent::sheet($index);
+    }
+
 
     /**
      * @param $model

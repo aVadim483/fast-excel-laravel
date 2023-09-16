@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class SheetReader extends \avadim\FastExcelReader\Sheet
 {
     private int $resultMode = 0;
+
+    /** @var mixed|null */
     private $mappingCallback = null;
 
     /**
@@ -49,7 +51,7 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
     }
 
     /**
-     * Load models from Excel
+     * Load models from Excel to database
      *      loadModels(User::class)
      *      loadModels(User::class, true) -- the first row used as a field names
      *      loadModels(User::class, 'B:D') -- read data from columns B:D

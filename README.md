@@ -20,6 +20,11 @@ Using this library, you can export arrays, collections and models to a XLSX-file
 * Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
 * Automatic field detection from imported table headers
 * Mapping import/export data
+* Supports auto formatter and custom formatter of datetime values for import data
+* The library can define and extract images from XLSX files
+* You can add active hyperlinks, formulas, notes and images to output XLSX-files
+* Supports workbook and sheet protection with/without passwords
+* Supports page settings - page margins, page size
 
 ## Installation
 
@@ -35,7 +40,7 @@ And then you can use facade ```Excel```
 $excel = \Excel::create();
 
 // export model...
-$sheet->withHeadings()->exportModel(Users::class);
+$excel->sheet()->withHeadings()->exportModel(Users::class);
 
 // and save XLSX-file to default storage
 $excel->saveTo('path/file.xlsx');
@@ -162,9 +167,12 @@ See detailed documentation for avadim/fast-excel-writer here: https://github.com
 $excel = \Excel::create('Users');
 $sheet = $excel->getSheet();
 
+// Set column B to 12
 $sheet->setColWidth('B', 12);
-$sheet->setColOptions('c', ['width' => 12, 'text-align' => 'center']);
-$sheet->setColWidth('d', 'auto');
+// Set options for column C
+$sheet->setColOptions('C', ['width' => 12, 'text-align' => 'center']);
+// Set column width to auto
+$sheet->setColWidth('D', 'auto');
 
 $title = 'This is demo of avadim/fast-excel-laravel';
 // Begin area for direct access to cells
@@ -174,7 +182,7 @@ $area->setValue('A2:D2', $title)
       ->applyFontStyleBold()
       ->applyTextCenter();
       
-// Write headers to area
+// Write headers to area, column letters are case independent
 $area
     ->setValue('a4:a5', '#')
     ->setValue('b4:b5', 'Number')
