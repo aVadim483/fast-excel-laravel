@@ -26,9 +26,9 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
      *
      * @return SheetReader
      */
-    public static function createSheet(string $sheetName, $sheetId, $file, $path): SheetReader
+    public static function createSheet(string $sheetName, $sheetId, $file, $path, $excel): SheetReader
     {
-        return new SheetReader($sheetName, $sheetId, $file, $path);
+        return new SheetReader($sheetName, $sheetId, $file, $path, $excel);
     }
 
     /**
