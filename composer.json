@@ -8,7 +8,9 @@
         "spreadsheet",
         "laravel",
         "export",
-        "import"
+        "import",
+        "ms office",
+        "office 2007"
     ],
     "type": "library",
     "homepage": "https://github.com/aVadim483/fast-excel-laravel",
@@ -21,8 +23,8 @@
     "require": {
         "php": ">=7.4",
         "ext-json": "*",
-        "avadim/fast-excel-writer": "^4.11",
-        "avadim/fast-excel-reader": "^2.14",
+        "avadim/fast-excel-writer": "^5.3",
+        "avadim/fast-excel-reader": "^2.15",
         "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
         "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0"
     },

@@ -22,7 +22,7 @@ Using this library, you can export arrays, collections and models to a XLSX-file
 * Mapping import/export data
 * Supports auto formatter and custom formatter of datetime values for import data
 * The library can define and extract images from XLSX files
-* You can add active hyperlinks, formulas, notes and images to output XLSX-files
+* You can add active hyperlinks, formulas, notes, charts and images to output XLSX-files
 * Supports workbook and sheet protection with/without passwords
 * Supports page settings - page margins, page size
 
