@@ -13,18 +13,25 @@ Using this library, you can export arrays, collections and models to a XLSX-file
 
 **Features**
 
-* Easily export models, collections and arrays to Excel
-* Export huge datasets with very fast, and using a minimum of memory
-* Сan create multiple sheets and supports basic column, row and cell styling
-* You can set the height of the rows and the width of the columns (including auto width calculation)
-* Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
-* Automatic field detection from imported table headers
+* Writing
+  * Easily export models, collections and arrays to Excel
+  * Export huge datasets very fast, and using a minimum of memory
+  * Сan create multiple sheets and supports basic column, row and cell styling
+  * You can set the height of the rows and the width of the columns (including auto width calculation)
+  * Mapping export data
+  * You can add active hyperlinks, formulas, notes and images to output XLSX-files
+  * Supports workbook and sheet protection with/without passwords
+  * Supports page settings - page margins, page size
+  * Inserting multiple charts
+  * Supports data validations and conditional formatting
+* Reading
+  * Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
+  * Automatic field detection from imported table headers
+  * Import huge files very fast, and using a minimum of memory
+  * Mapping import data
+  * Supports auto formatter and custom formatter of datetime values for import data
+  * The library can define and extract images from XLSX files
 * Mapping import/export data
-* Supports auto formatter and custom formatter of datetime values for import data
-* The library can define and extract images from XLSX files
-* You can add active hyperlinks, formulas, notes, charts and images to output XLSX-files
-* Supports workbook and sheet protection with/without passwords
-* Supports page settings - page margins, page size
 
 ## Installation
 
@@ -99,27 +106,12 @@ $sheet->withHeadings()
 $excel->saveTo('path/file.xlsx');
 ```
 
-### Mapping Export Data
-
-You can map the data that needs to be added as row
-
-```php
-$sheet = $excel->getSheet();
-$sheet->mapping(function($model) {
-    return [
-        'id' => $model->id, 'date' => $model->created_at, 'name' => $model->first_name . $model->last_name,
-    ];
-})->exportModel(User::class);
-$excel->save($testFileName);
-
-```
-
 ### Export Any Collections and Arrays
 ```php
 // Create workbook with sheet named 'Users'
 $excel = \Excel::create('Users');
 
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 // Get users as collection
 $users = User::where('age', '>', 35)->get();
 
@@ -159,13 +151,28 @@ $sheet->writeData(function () {
 
 ```
 
+### Mapping Export Data
+
+You can map the data that needs to be added as row
+
+```php
+$sheet = $excel->sheet();
+$sheet->mapping(function($model) {
+    return [
+        'id' => $model->id, 'date' => $model->created_at, 'name' => $model->first_name . $model->last_name,
+    ];
+})->exportModel(User::class);
+$excel->save($testFileName);
+
+```
+
 ### Advanced Usage for Data Export
 
 See detailed documentation for avadim/fast-excel-writer here: https://github.com/aVadim483/fast-excel-writer/tree/master#readme
 
 ```php
 $excel = \Excel::create('Users');
-$sheet = $excel->getSheet();
+$sheet = $excel->sheet();
 
 // Set column B to 12
 $sheet->setColWidth('B', 12);
@@ -203,7 +210,7 @@ $area->withRange('a4:d5')
 $sheet->writeAreas();
 
 // You can set value formats for some fields
-$sheet->setFieldFormats(['birthday' => '@date', 'number' => '@integer']);
+$sheet->formatAttributes(['birthday' => '@date', 'number' => '@integer']);
 
 // Write data to sheet
 $sheet->writeData($data);
@@ -272,7 +279,7 @@ See detailed documentation for avadim/fast-excel-reader here: https://github.com
 ```php
 $excel = Excel::open($file);
 
-$sheet = $excel->getSheet('Articles');
+$sheet = $excel->sheet('Articles');
 $sheet->setReadArea('B5');
 foreach ($sheet->nextRow() as $rowNum => $rowData) {
     $user = User::create([

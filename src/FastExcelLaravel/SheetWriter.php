@@ -12,10 +12,16 @@ class SheetWriter extends Sheet
     private $mappingCallback = null;
 
     private array $headers = [];
+    private array $attrFormats = [];
     private int $dataRowCount = 0;
 
 
-    protected function _toArray($record)
+    /**
+     * @param $record
+     *
+     * @return array
+     */
+    protected function _toArray($record): array
     {
         if (is_object($record)) {
             if (method_exists($record, 'toArray')) {
@@ -32,6 +38,11 @@ class SheetWriter extends Sheet
         return $result;
     }
 
+    /**
+     * @param $record
+     *
+     * @return void
+     */
     protected function _writeHeader($record)
     {
         if (!$this->headers['header_keys']) {
@@ -47,7 +58,14 @@ class SheetWriter extends Sheet
         ++$this->dataRowCount;
     }
 
-    public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): Sheet
+    /**
+     * @param array $rowValues
+     * @param array|null $rowStyle
+     * @param array|null $cellStyles
+     *
+     * @return SheetWriter
+     */
+    public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): SheetWriter
     {
         if ($this->dataRowCount > 0 && !empty($this->headers['header_keys'])) {
             $rowData = [];
@@ -62,6 +80,14 @@ class SheetWriter extends Sheet
         }
         else {
             $rowData = $rowValues;
+        }
+        if ($this->attrFormats) {
+            $cellStyles = (array)$cellStyles;
+            foreach (array_keys($rowData) as $n => $attribute) {
+                if (isset($this->attrFormats[$attribute])) {
+                    $cellStyles[$n]['format'] = $this->attrFormats[$attribute];
+                }
+            }
         }
 
         return parent::writeRow($rowData, $rowStyle, $cellStyles);
@@ -168,4 +194,15 @@ class SheetWriter extends Sheet
         return $this;
     }
 
+    /**
+     * @param array $formats
+     *
+     * @return $this
+     */
+    public function formatAttributes(array $formats): SheetWriter
+    {
+        $this->attrFormats = array_replace($this->attrFormats, $formats);
+
+        return $this;
+    }
 }

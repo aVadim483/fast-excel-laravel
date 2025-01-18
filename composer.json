@@ -20,11 +20,16 @@
             "avadim\\FastExcelLaravel\\": "./src/FastExcelLaravel"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "avadim\\FastExcelLaravel\\Test\\": "tests/"
+        }
+    },
     "require": {
         "php": ">=7.4",
         "ext-json": "*",
-        "avadim/fast-excel-writer": "^5.6",
-        "avadim/fast-excel-reader": "^2.17",
+        "avadim/fast-excel-writer": "^6.4",
+        "avadim/fast-excel-reader": "^2.20",
         "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
         "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0"
     },
@@ -41,5 +46,10 @@
                 "Excel": "avadim\\FastExcelLaravel\\Facades\\Excel"
             }
         }
+    },
+    "scripts": {
+        "test": [
+            "vendor/bin/phpunit"
+        ]
     }
 }

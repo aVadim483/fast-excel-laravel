@@ -21,8 +21,15 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     {
         if (empty($options['temp_dir'])) {
             $tempDir = storage_path('app/tmp/fast-excel');
-            if(!\File::isDirectory($tempDir)) {
-                \File::makeDirectory($tempDir, 0777, true, true);
+            if (class_exists('\File')) {
+                if(!\File::isDirectory($tempDir)) {
+                    \File::makeDirectory($tempDir, 0777, true, true);
+                }
+            }
+            else {
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0777, true);
+                }
             }
             if (!$options) {
                 $options = ['temp_dir' => $tempDir];
@@ -121,18 +128,25 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
      * @param $disk
      * @param $path
      *
-     * @return void
+     * @return bool
      *
      * @throws \Illuminate\Contracts\Filesystem\FileExistsException
      */
-    public function store($disk, $path)
+    public function store($disk, $path): bool
     {
-        $tmpFile = $this->writer->tempFilename();
-        $this->save($tmpFile);
-        $handle = fopen($tmpFile, 'rb');
+        $result = false;
+        $tmpFile = $this->writer->makeTempFile();
+        if ($this->writer->saveToFile($tmpFile, true, $this->getMetadata())) {
+            $this->saved = true;
 
-        \Storage::disk($disk)->writeStream($path, $handle);
+            $handle = fopen($tmpFile, 'rb');
+            if ($handle) {
+                $result = \Storage::disk($disk)->writeStream($path, $handle);
+                fclose($handle);
+            }
+        }
+        $this->writer->removeFiles();
 
-        fclose($handle);
+        return $result;
     }
 }
