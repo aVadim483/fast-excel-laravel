@@ -167,7 +167,7 @@ class FastExcelLaravelTest extends TestCase
 
         $this->assertEquals(array_values($data[0]), $this->getValues('A1', 'B1', 'C1', 'D1'));
 
-        $this->endExportTest($testFileName);
+        $this->endExportTest($path);
     }
 
     public function testExportArrayWithHeaders()
