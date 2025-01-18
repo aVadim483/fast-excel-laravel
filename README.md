@@ -1,4 +1,15 @@
+<table border="0">
+<tr>
+<td valign="top"><img height="240px" src="logo/logo-laravel.jpg" alt="FastExcelLaravel"></td>
+<td valign="top">
+<p align="center">
+
 # FastExcelLaravel
+
+</p>
+</td>
+</tr>
+</table>
 
 Lightweight and very fast XLSX Excel Spreadsheet read/write library for Laravel in pure PHP
 (wrapper around [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer) 
