@@ -1,3 +1,16 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependencies
 vendor
 composer.lock
+
+# Testing
 .phpunit.result.cache
+
+# IDEA
+/.idea
+/.nova
+/.vscode
+/.fleet
