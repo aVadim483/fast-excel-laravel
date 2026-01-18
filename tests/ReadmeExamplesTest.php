@@ -72,6 +72,8 @@ class ReadmeExamplesTest extends TestCase
         $this->assertEquals('Helen', $rows[1]['B']);
         $this->assertEquals(2, $rows[2]['A']);
         $this->assertEquals('Peter', $rows[2]['B']);
+
+        unlink($testFileName);
     }
 
     /**
@@ -101,6 +103,8 @@ class ReadmeExamplesTest extends TestCase
         
         $this->assertEquals(1, $rows[1]['A']);
         $this->assertEquals('google.com', $rows[1]['B']);
+
+        unlink($testFileName);
     }
 
     /**
@@ -129,6 +133,8 @@ class ReadmeExamplesTest extends TestCase
         
         $this->assertEquals('A', $rows[1]['B']);
         $this->assertEquals('B', $rows[2]['B']);
+
+        unlink($testFileName);
     }
 
     /**
@@ -165,6 +171,8 @@ class ReadmeExamplesTest extends TestCase
         
         $this->assertEquals(1, $rows[1]['A']);
         $this->assertEquals('John Doe', $rows[1]['B']);
+
+        unlink($testFileName);
     }
 
     /**
@@ -201,6 +209,8 @@ class ReadmeExamplesTest extends TestCase
         $this->assertEquals('Header Title', $rows[1]['A']);
         $this->assertEquals('ID', $rows[2]['A']);
         $this->assertEquals(1, $rows[3]['A']);
+
+        unlink($testFileName);
     }
 
     /**
@@ -230,5 +240,7 @@ class ReadmeExamplesTest extends TestCase
         
         $this->assertCount(1, $importedData);
         $this->assertEquals('John Doe', $importedData[2]['name']);
+
+        unlink($testFileName);
     }
 }
