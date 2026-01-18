@@ -32,7 +32,7 @@ Using this library, you can export arrays, collections and models to a XLSX-file
   * Mapping export data
   * You can add active hyperlinks, formulas, notes and images to output XLSX-files
   * Supports workbook and sheet protection with/without passwords
-  * Supports page settings - page margins, page size
+  * Supports page settings – page margins, page size
   * Inserting multiple charts
   * Supports data validations and conditional formatting
 * Reading
@@ -54,7 +54,7 @@ composer require avadim/fast-excel-laravel
 And then you can use facade ```Excel```
 
 ```php
-// Create workbook...
+// Create a new workbook...
 $excel = \Excel::create();
 
 // export model...
@@ -66,7 +66,7 @@ $excel->saveTo('path/file.xlsx');
 // or save file to specified disk
 $excel->store('disk', 'path/file.xlsx');
 
-// Open saved workbook
+// Open an existing workbook
 $excel = \Excel::open(storage_path('path/file.xlsx'));
 
 // import records to database
@@ -85,7 +85,8 @@ Jump To:
   * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
 * [More Features](#more-features)
 * [Do you want to support FastExcelLaravel?](#do-you-want-to-support-fastexcellaravel)
- 
+
+You can find [API references here](/docs/90-api-reference.md)
 
 ## Export Data
 
@@ -187,8 +188,8 @@ $sheet = $excel->sheet();
 
 // Set column B to 12
 $sheet->setColWidth('B', 12);
-// Set options for column C
-$sheet->setColOptions('C', ['width' => 12, 'text-align' => 'center']);
+// Set styles for column C
+$sheet->setColDataStyle('C', ['width' => 12, 'text-align' => 'center']);
 // Set column width to auto
 $sheet->setColWidth('D', 'auto');
 

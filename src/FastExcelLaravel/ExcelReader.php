@@ -32,6 +32,8 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
     }
 
     /**
+     * Set headings for the current sheet
+     *
      * @param array|null $headers
      *
      * @return $this
@@ -44,6 +46,8 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
     }
 
     /**
+     * Set mapping callback for the current sheet
+     *
      * @param $callback
      *
      * @return $this
@@ -56,6 +60,8 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
     }
 
     /**
+     * Import data into a model from the current sheet
+     *
      * @param string $modelClass
      * @param string|bool|null $address
      * @param array|bool|null $columns

@@ -12,6 +12,8 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
     private $mappingCallback = null;
 
     /**
+     * Set headings for the sheet
+     *
      * @param array|null $headers
      *
      * @return $this
@@ -24,6 +26,8 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
     }
 
     /**
+     * Set mapping callback for the sheet
+     *
      * @param $callback
      *
      * @return $this
@@ -81,5 +85,26 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
         $this->resultMode = 0;
 
         return $this;
+    }
+
+    /**
+     * Returns cell values as a two-dimensional array
+     *
+     * @param array|bool|int|null $columnKeys
+     * @param int|null $resultMode
+     * @param bool|null $styleIdxInclude
+     *
+     * @return array
+     */
+    public function readRows($columnKeys = [], ?int $resultMode = null, ?bool $styleIdxInclude = null): array
+    {
+        $rows = parent::readRows($columnKeys, $resultMode, $styleIdxInclude);
+        if ($this->mappingCallback) {
+            foreach ($rows as $rowNum => $rowData) {
+                $rows[$rowNum] = call_user_func($this->mappingCallback, $rowData);
+            }
+        }
+
+        return $rows;
     }
 }

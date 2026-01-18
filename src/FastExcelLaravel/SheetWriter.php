@@ -3,7 +3,7 @@
 namespace avadim\FastExcelLaravel;
 
 use avadim\FastExcelWriter\Sheet;
-use avadim\FastExcelWriter\Style;
+use avadim\FastExcelWriter\Style\Style;
 use Illuminate\Support\Collection;
 
 class SheetWriter extends Sheet
@@ -17,6 +17,8 @@ class SheetWriter extends Sheet
 
 
     /**
+     * Convert record to array
+     *
      * @param $record
      *
      * @return array
@@ -39,6 +41,8 @@ class SheetWriter extends Sheet
     }
 
     /**
+     * Write header to the sheet
+     *
      * @param $record
      *
      * @return void
@@ -59,13 +63,15 @@ class SheetWriter extends Sheet
     }
 
     /**
+     * Write values to the current row
+     *
      * @param array $rowValues
-     * @param array|null $rowStyle
+     * @param array|Style|null $rowStyle
      * @param array|null $cellStyles
      *
      * @return SheetWriter
      */
-    public function writeRow(array $rowValues = [], array $rowStyle = null, array $cellStyles = null): SheetWriter
+    public function writeRow(array $rowValues = [], $rowStyle = null, ?array $cellStyles = null): SheetWriter
     {
         if ($this->dataRowCount > 0 && !empty($this->headers['header_keys'])) {
             $rowData = [];
@@ -94,13 +100,15 @@ class SheetWriter extends Sheet
     }
 
     /**
+     * Write data to the sheet
+     *
      * @param $data
-     * @param array|null $rowStyle
+     * @param array|Style|null $rowStyle
      * @param array|null $colStyles
      *
      * @return $this
      */
-    public function writeData($data, array $rowStyle = null, array $colStyles = null): SheetWriter
+    public function writeData($data, $rowStyle = null, array $colStyles = null): SheetWriter
     {
         if (is_array($data) || ($data instanceof Collection)) {
             foreach ($data as $record) {
@@ -131,13 +139,15 @@ class SheetWriter extends Sheet
     }
 
     /**
+     * Export a model to the sheet
+     *
      * @param $model
-     * @param array|null $rowStyle
+     * @param array|Style|null $rowStyle
      * @param array|null $colStyles
      *
      * @return $this
      */
-    public function exportModel($model, array $rowStyle = null, array $colStyles = null): SheetWriter
+    public function exportModel($model, $rowStyle = null, array $colStyles = null): SheetWriter
     {
         $this->writeData(static function() use ($model) {
             foreach ($model::cursor() as $user) {
@@ -150,6 +160,8 @@ class SheetWriter extends Sheet
     }
 
     /**
+     * Set headings for the sheet
+     *
      * @param array|null $headers
      * @param array|null $rowStyle
      * @param array|null $colStyles
@@ -183,6 +195,8 @@ class SheetWriter extends Sheet
     }
 
     /**
+     * Set mapping callback for the sheet
+     *
      * @param $callback
      *
      * @return $this
@@ -195,6 +209,8 @@ class SheetWriter extends Sheet
     }
 
     /**
+     * Set format attributes
+     *
      * @param array $formats
      *
      * @return $this

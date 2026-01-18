@@ -5,6 +5,8 @@ namespace avadim\FastExcelLaravel;
 class Excel
 {
     /**
+     * Excel constructor
+     *
      * @param array|null $options
      */
     public function __construct(?array $options = [])

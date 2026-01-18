@@ -83,6 +83,8 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
 
 
     /**
+     * Export a model to the current sheet
+     *
      * @param $model
      * @param array|null $rowStyle
      * @param array|null $cellStyles
@@ -97,6 +99,8 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     }
 
     /**
+     * Write data to the current sheet
+     *
      * @param $data
      *
      * @return $this
