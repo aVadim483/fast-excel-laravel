@@ -108,7 +108,7 @@ class SheetWriter extends Sheet
      *
      * @return $this
      */
-    public function writeData($data, $rowStyle = null, array $colStyles = null): SheetWriter
+    public function writeData($data, $rowStyle = null, ?array $colStyles = null): SheetWriter
     {
         if (is_array($data) || ($data instanceof Collection)) {
             foreach ($data as $record) {
@@ -147,7 +147,7 @@ class SheetWriter extends Sheet
      *
      * @return $this
      */
-    public function exportModel($model, $rowStyle = null, array $colStyles = null): SheetWriter
+    public function exportModel($model, $rowStyle = null, ?array $colStyles = null): SheetWriter
     {
         $this->writeData(static function() use ($model) {
             foreach ($model::cursor() as $user) {

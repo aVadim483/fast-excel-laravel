@@ -2,6 +2,8 @@
 
 namespace avadim\FastExcelLaravel;
 
+use avadim\FastExcelWriter\Options;
+use avadim\FastExcelWriter\Sheet;
 use Illuminate\Support\Collection;
 
 class ExcelWriter  extends \avadim\FastExcelWriter\Excel
@@ -13,11 +15,11 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
      * Create XLSX for export
      *
      * @param string|array $sheets
-     * @param array|null $options
+     * @param array|Options|null $options
      *
      * @return ExcelWriter
      */
-    public static function create($sheets = null, ?array $options = []): ExcelWriter
+    public static function create($sheets = null, $options = null): ExcelWriter
     {
         if (empty($options['temp_dir'])) {
             $tempDir = storage_path('app/tmp/fast-excel');
@@ -74,9 +76,10 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
      *
      * @param int|string|null $index - number or name of sheet
      *
-     * @return SheetWriter
+     * @return Sheet|null|SheetWriter
      */
-    public function sheet($index = null): SheetWriter
+    #[ \ReturnTypeWillChange]
+    public function sheet($index = null): ?SheetWriter
     {
         return parent::sheet($index);
     }
@@ -91,9 +94,9 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
      *
      * @return $this
      */
-    public function exportModel($model, array $rowStyle = null, array $cellStyles = null): ExcelWriter
+    public function exportModel($model, ?array $rowStyle = null, ?array $cellStyles = null): ExcelWriter
     {
-        $this->getSheet()->exportModel($model, $rowStyle, $cellStyles);
+        $this->sheet()->exportModel($model, $rowStyle, $cellStyles);
 
         return $this;
     }
@@ -107,7 +110,7 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
      */
     public function writeData($data): ExcelWriter
     {
-        $this->getSheet()->writeData($data);
+        $this->sheet()->writeData($data);
 
         return $this;
     }
