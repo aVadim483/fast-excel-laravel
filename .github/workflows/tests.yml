@@ -28,6 +28,9 @@ jobs:
           extensions: json, zip
           coverage: none
 
+      - name: Allow EOL framework releases with known advisories (Laravel 10)
+        run: composer config audit.block-insecure false
+
       - name: Install dependencies
         run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
 
