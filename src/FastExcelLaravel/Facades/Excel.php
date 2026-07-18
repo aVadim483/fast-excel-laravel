@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Class Excel
  *
- * @method static string export($path, callable $callback = null)
+ * @method static \avadim\FastExcelLaravel\ExcelWriter create($sheets = null, ?array $options = [])
+ * @method static \avadim\FastExcelLaravel\ExcelReader open(string $file, ?array $options = [])
+ *
+ * @see \avadim\FastExcelLaravel\Excel
  */
 class Excel extends Facade
 {

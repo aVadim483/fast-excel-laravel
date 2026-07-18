@@ -79,10 +79,12 @@ Jump To:
   * [Export Any Collections and Arrays](#export-any-collections-and-arrays)
   * [Mapping Export Data](#mapping-export-data)
   * [Advanced Usage for Data Export](#advanced-usage-for-data-export)
+  * [Download File](#download-file)
 * [Import Data](#import-data)
   * [Import a Model](#import-a-model)
   * [Mapping Import Data](#mapping-import-data)
   * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
+* [Configuration](#configuration)
 * [More Features](#more-features)
 * [Do you want to support FastExcelLaravel?](#do-you-want-to-support-fastexcellaravel)
 
@@ -232,6 +234,22 @@ $excel->saveTo($testFileName);
 
 ```
 
+### Download File
+
+You can return the generated file as a download response right from a controller action
+
+```php
+public function export()
+{
+    $excel = \Excel::create('Users');
+    $excel->sheet()->withHeadings()->exportModel(User::class);
+
+    // Returns Symfony\Component\HttpFoundation\BinaryFileResponse,
+    // the temporary file will be deleted after sending
+    return $excel->download('users.xlsx');
+}
+```
+
 ## Import Data
 
 ### Import a Model
@@ -307,6 +325,26 @@ foreach ($sheet->nextRow() as $rowNum => $rowData) {
     ]);
 }
 ```
+
+## Configuration
+
+Optionally you can publish the config file
+
+```
+php artisan vendor:publish --provider="avadim\FastExcelLaravel\Providers\ExcelServiceProvider" --tag=config
+```
+
+Available options in `config/fast-excel.php`:
+
+```php
+return [
+    // Directory for temporary files created while reading and writing XLSX.
+    // When null, storage_path('app/tmp/fast-excel') is used
+    'temp_dir' => null,
+];
+```
+
+Stale temporary files (older than 24 hours, left after failed runs) are cleaned up automatically.
 
 ## More Features
 You can see more features for export in the documentation for [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer).

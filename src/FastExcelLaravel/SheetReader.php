@@ -8,11 +8,15 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
 {
     private int $resultMode = 0;
 
+    private array $customHeaders = [];
+
     /** @var mixed|null */
     private $mappingCallback = null;
 
     /**
-     * Set headings for the sheet
+     * Set headings for the sheet. The first row of the read area is always skipped;
+     * if $headers is not empty, these names are used as attribute names (in column order)
+     * instead of the values of the first row
      *
      * @param array|null $headers
      *
@@ -21,6 +25,7 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
     public function withHeadings(?array $headers = []): SheetReader
     {
         $this->resultMode = \avadim\FastExcelReader\Excel::KEYS_FIRST_ROW;
+        $this->customHeaders = $headers ? array_values($headers) : [];
 
         return $this;
     }
@@ -76,6 +81,9 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
         foreach ($this->nextRow($columns, $this->resultMode) as $rowData) {
             /** @var Model $model */
             $model = new $modelClass;
+            if ($this->customHeaders) {
+                $rowData = $this->_applyCustomHeaders($rowData);
+            }
             if ($this->mappingCallback) {
                 $rowData = call_user_func($this->mappingCallback, $rowData);
             }
@@ -83,8 +91,27 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
             $model->save();
         }
         $this->resultMode = 0;
+        $this->customHeaders = [];
 
         return $this;
+    }
+
+    /**
+     * Replace row keys with custom header names (in column order)
+     *
+     * @param array $rowData
+     *
+     * @return array
+     */
+    protected function _applyCustomHeaders(array $rowData): array
+    {
+        $values = array_values($rowData);
+        $record = [];
+        foreach ($this->customHeaders as $idx => $attribute) {
+            $record[$attribute] = $values[$idx] ?? null;
+        }
+
+        return $record;
     }
 
     /**

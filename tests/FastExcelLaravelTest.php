@@ -25,7 +25,7 @@ class FastExcelLaravelTest extends TestCase
         parent::setUp();
         $this->testStorage = __DIR__ . '/test_storage';
 
-        $this->app['path.storage'] = $this->testStorage;
+        $this->app->useStoragePath($this->testStorage);
 
         $this->setUpDatabase();
     }
@@ -477,5 +477,99 @@ class FastExcelLaravelTest extends TestCase
         $this->assertTrue(file_exists($testFileName));
 
         unlink($testFileName);
+    }
+
+    public function testImportModelWithCustomHeadings()
+    {
+        $excel = Excel::open(storage_path('test_model.xlsx'));
+
+        FakeModel::$storage = [];
+        $excel->setDateFormat('Y-m-d');
+        $excel->withHeadings(['foo', 'bar', 'int'])->importModel(FakeModel::class);
+        $this->assertCount(3, FakeModel::$storage);
+        $this->assertEquals('James Bond', FakeModel::$storage[0]->foo);
+        $this->assertEquals(4573, FakeModel::$storage[0]->int);
+        $this->assertEquals('1753-01-31', FakeModel::$storage[2]->bar);
+
+        // custom headers are reset after import, the next one uses first row values again
+        FakeModel::$storage = [];
+        $excel->withHeadings()->importModel(FakeModel::class);
+        $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
+    }
+
+    public function testOpenWithOptions()
+    {
+        $tempDir = $this->testStorage . '/tmp_reader';
+        $excel = Excel::open(storage_path('test_model.xlsx'), ['temp_dir' => $tempDir]);
+        $this->assertEquals('Sheet1', $excel->sheet()->name());
+
+        $prop = new \ReflectionProperty(\avadim\FastExcelReader\Reader::class, 'tempDir');
+        $prop->setAccessible(true);
+        $this->assertEquals(str_replace('\\', '/', $tempDir), str_replace('\\', '/', $prop->getValue()));
+
+        \avadim\FastExcelReader\Reader::setTempDir('');
+    }
+
+    public function testSaveToReturnsResult()
+    {
+        $testFileName = 'test_saveto.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->writeData($this->getDataArray());
+
+        $this->assertTrue($excel->saveTo($testFileName));
+        $this->assertTrue(file_exists(storage_path($testFileName)));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testDownloadResponse()
+    {
+        $excel = Excel::create('Users');
+        $excel->sheet()->writeData($this->getDataArray());
+
+        $response = $excel->download('report');
+
+        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\BinaryFileResponse::class, $response);
+        $disposition = $response->headers->get('Content-Disposition');
+        $this->assertStringContainsString('attachment', $disposition);
+        $this->assertStringContainsString('report.xlsx', $disposition);
+
+        $file = $response->getFile()->getPathname();
+        $this->assertTrue(file_exists($file));
+        unlink($file);
+    }
+
+    public function testTempDirFromConfig()
+    {
+        $tempDir = $this->testStorage . '/tmp_config';
+        config(['fast-excel.temp_dir' => $tempDir]);
+
+        // simulate a stale temp file left from a failed run
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+        $staleFile = $tempDir . '/stale.tmp';
+        file_put_contents($staleFile, 'x');
+        touch($staleFile, time() - 90000);
+
+        $testFileName = 'test_config.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $this->assertTrue(is_dir($tempDir));
+        $this->assertFalse(file_exists($staleFile));
+
+        $excel->sheet()->writeData($this->getDataArray());
+        $this->assertTrue($excel->saveTo($testFileName));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testServiceProvider()
+    {
+        $this->app->register(\avadim\FastExcelLaravel\Providers\ExcelServiceProvider::class);
+
+        $this->assertInstanceOf(Excel::class, $this->app->make('excel'));
+        $this->assertInstanceOf(Excel::class, $this->app->make(Excel::class));
+        $this->assertTrue($this->app['config']->has('fast-excel'));
+        $this->assertNull(config('fast-excel.temp_dir'));
     }
 }

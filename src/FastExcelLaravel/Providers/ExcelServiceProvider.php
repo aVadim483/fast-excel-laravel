@@ -2,6 +2,7 @@
 
 namespace avadim\FastExcelLaravel\Providers;
 
+use avadim\FastExcelLaravel\Excel;
 use Illuminate\Support\ServiceProvider;
 
 class ExcelServiceProvider extends ServiceProvider
@@ -13,24 +14,23 @@ class ExcelServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../../../config/fast-excel.php' => config_path('fast-excel.php'),
+            ], 'config');
+        }
     }
 
     /**
      * Register any application services.
      *
-     * @SuppressWarnings("unused")
-     *
      * @return void
      */
     public function register()
     {
-        $this->app->bind('excel', function ($app, $data = null) {
-            if (is_array($data)) {
-                $data = collect($data);
-            }
+        $this->mergeConfigFrom(__DIR__ . '/../../../config/fast-excel.php', 'fast-excel');
 
-            return new \avadim\FastExcelLaravel\Excel();
-        });
+        $this->app->bind(Excel::class);
+        $this->app->alias(Excel::class, 'excel');
     }
 }

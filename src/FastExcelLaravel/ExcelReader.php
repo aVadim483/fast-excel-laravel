@@ -8,12 +8,18 @@ class ExcelReader extends \avadim\FastExcelReader\Excel
      * Open XLSX file for import
      *
      * @param string $file
+     * @param array|null $options
      *
      * @return ExcelReader
      */
-    public static function open(string $file): ExcelReader
+    public static function open(string $file, ?array $options = []): ExcelReader
     {
-        return new self($file);
+        $tempDir = $options['temp_dir'] ?? '';
+        if (!$tempDir && function_exists('config')) {
+            $tempDir = config('fast-excel.temp_dir') ?: '';
+        }
+
+        return new self($file, $tempDir);
     }
 
     /**

@@ -30,7 +30,7 @@ class ReadmeExamplesTest extends TestCase
         if (!is_dir($this->testStorage)) {
             mkdir($this->testStorage, 0777, true);
         }
-        $this->app['path.storage'] = $this->testStorage;
+        $this->app->useStoragePath($this->testStorage);
     }
 
     protected function getEnvironmentSetUp($app)

@@ -5,6 +5,7 @@ namespace avadim\FastExcelLaravel;
 use avadim\FastExcelWriter\Options;
 use avadim\FastExcelWriter\Sheet;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class ExcelWriter  extends \avadim\FastExcelWriter\Excel
 {
@@ -22,17 +23,14 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     public static function create($sheets = null, $options = null): ExcelWriter
     {
         if (empty($options['temp_dir'])) {
-            $tempDir = storage_path('app/tmp/fast-excel');
-            if (class_exists('\File')) {
-                if(!\File::isDirectory($tempDir)) {
-                    \File::makeDirectory($tempDir, 0777, true, true);
-                }
+            $tempDir = function_exists('config') ? config('fast-excel.temp_dir') : null;
+            if (!$tempDir) {
+                $tempDir = storage_path('app/tmp/fast-excel');
             }
-            else {
-                if (!is_dir($tempDir)) {
-                    mkdir($tempDir, 0777, true);
-                }
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0777, true);
             }
+            self::_cleanupTempDir($tempDir);
             if (!$options) {
                 $options = ['temp_dir' => $tempDir];
             }
@@ -56,6 +54,23 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
         }
 
         return $excel;
+    }
+
+    /**
+     * Remove stale temporary files (older than 24 hours) left after failed runs
+     *
+     * @param string $tempDir
+     *
+     * @return void
+     */
+    protected static function _cleanupTempDir(string $tempDir): void
+    {
+        $expired = time() - 86400;
+        foreach (glob($tempDir . DIRECTORY_SEPARATOR . '*') ?: [] as $file) {
+            if (is_file($file) && filemtime($file) < $expired) {
+                @unlink($file);
+            }
+        }
     }
 
     /**
@@ -124,20 +139,16 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
      */
     public function saveTo(string $filePath): bool
     {
-        $this->save(storage_path($filePath));
-
-        return true;
+        return $this->save(storage_path($filePath));
     }
 
     /**
      * Store file to specified disk
      *
-     * @param $disk
-     * @param $path
+     * @param string $disk
+     * @param string $path
      *
      * @return bool
-     *
-     * @throws \Illuminate\Contracts\Filesystem\FileExistsException
      */
     public function store($disk, $path): bool
     {
@@ -148,12 +159,38 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
 
             $handle = fopen($tmpFile, 'rb');
             if ($handle) {
-                $result = \Storage::disk($disk)->writeStream($path, $handle);
+                $result = Storage::disk($disk)->writeStream($path, $handle);
                 fclose($handle);
             }
         }
         $this->writer->removeFiles();
 
         return $result;
+    }
+
+    /**
+     * Prepare a response that downloads the generated XLSX-file
+     *
+     * @param string|null $name
+     * @param array|null $headers
+     *
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    #[\ReturnTypeWillChange]
+    public function download(?string $name = null, ?array $headers = [])
+    {
+        $tmpFile = $this->writer->makeTempFileName(uniqid('xlsx_'));
+        $this->save($tmpFile);
+        if (!$name) {
+            $name = basename($tmpFile) . '.xlsx';
+        }
+        else {
+            $name = basename($name);
+            if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) !== 'xlsx') {
+                $name .= '.xlsx';
+            }
+        }
+
+        return response()->download($tmpFile, $name, $headers ?? [])->deleteFileAfterSend(true);
     }
 }
