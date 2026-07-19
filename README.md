@@ -11,6 +11,8 @@
 </tr>
 </table>
 
+**English** | [Русский](README.ru.md)
+
 [![Tests](https://github.com/aVadim483/fast-excel-laravel/actions/workflows/tests.yml/badge.svg)](https://github.com/aVadim483/fast-excel-laravel/actions/workflows/tests.yml)
 [![Latest Stable Version](https://img.shields.io/packagist/v/avadim/fast-excel-laravel)](https://packagist.org/packages/avadim/fast-excel-laravel)
 [![Total Downloads](https://img.shields.io/packagist/dt/avadim/fast-excel-laravel)](https://packagist.org/packages/avadim/fast-excel-laravel)
