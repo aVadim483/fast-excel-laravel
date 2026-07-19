@@ -11,6 +11,11 @@
 </tr>
 </table>
 
+[![Tests](https://github.com/aVadim483/fast-excel-laravel/actions/workflows/tests.yml/badge.svg)](https://github.com/aVadim483/fast-excel-laravel/actions/workflows/tests.yml)
+[![Latest Stable Version](https://img.shields.io/packagist/v/avadim/fast-excel-laravel)](https://packagist.org/packages/avadim/fast-excel-laravel)
+[![Total Downloads](https://img.shields.io/packagist/dt/avadim/fast-excel-laravel)](https://packagist.org/packages/avadim/fast-excel-laravel)
+[![License](https://img.shields.io/packagist/l/avadim/fast-excel-laravel)](https://packagist.org/packages/avadim/fast-excel-laravel)
+
 Lightweight and very fast XLSX Excel Spreadsheet read/write library for Laravel in pure PHP
 (wrapper around [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer) 
  and [FastExcelReader](https://packagist.org/packages/avadim/fast-excel-reader))
@@ -43,6 +48,13 @@ Using this library, you can export arrays, collections and models to a XLSX-file
   * Supports auto formatter and custom formatter of datetime values for import data
   * The library can define and extract images from XLSX files
 * Mapping import/export data
+
+## Requirements
+
+| Version | PHP    | Laravel |
+|---------|--------|---------|
+| 3.x     | >= 8.1 | 10 – 13 |
+| 2.x     | >= 7.4 | 6 – 13  |
 
 ## Installation
 
@@ -98,6 +110,7 @@ Easy and fast export of a model. This way you export only model data without hea
 
 // Create workbook with sheet named 'Users'
 $excel = \Excel::create('Users');
+$sheet = $excel->sheet();
 
 // Export all users to Excel file
 $sheet->exportModel(Users::class);
@@ -110,6 +123,7 @@ The following code will write the field names and styles (font and borders) to t
 
 // Create workbook with sheet named 'Users'
 $excel = \Excel::create('Users');
+$sheet = $excel->sheet();
 
 // Write users with field names in the first row
 $sheet->withHeadings()
@@ -130,7 +144,7 @@ $sheet = $excel->sheet();
 $users = User::where('age', '>', 35)->get();
 
 // Write attribute names
-$sheet->writeRow(array_keys(User::getAttributes()));
+$sheet->writeRow(array_keys($users->first()->getAttributes()));
 
 // Write all selected records
 $sheet->writeData($users);
@@ -267,6 +281,11 @@ $excel->withHeadings()->importModel(User::class);
 
 // Done!!!
 ```
+You can also set your own attribute names (in column order) — the first row is still skipped,
+but its values are ignored
+```php
+$excel->withHeadings(['name', 'birthday', 'random'])->importModel(User::class);
+```
 You can define the columns or cells from which you will import
 
 ```php
@@ -314,13 +333,13 @@ $sheet->setReadArea('B5');
 foreach ($sheet->nextRow() as $rowNum => $rowData) {
     $user = User::create([
         'name' => $rowData['B'],
-        'birthday' => new \Carbon($rowData['C']),
+        'birthday' => new \Carbon\Carbon($rowData['C']),
         'password' => bcrypt($rowData['D']),
     ]);
     Article::create([
         'user_id' => $user->id,
         'title' => $rowData['E'],
-        'date' => new \Carbon($rowData['F']),
+        'date' => new \Carbon\Carbon($rowData['F']),
         'public' => $rowData['G'] === 'yes',
     ]);
 }
@@ -345,6 +364,13 @@ return [
 ```
 
 Stale temporary files (older than 24 hours, left after failed runs) are cleaned up automatically.
+
+You can also override the temporary directory for a single workbook via options
+
+```php
+$excel = \Excel::create('Users', ['temp_dir' => '/path/to/tmp']);
+$excel = \Excel::open($file, ['temp_dir' => '/path/to/tmp']);
+```
 
 ## More Features
 You can see more features for export in the documentation for [FastExcelWriter](https://packagist.org/packages/avadim/fast-excel-writer).
