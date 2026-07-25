@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For earlier history see the
 [releases page](https://github.com/aVadim483/fast-excel-laravel/releases).
 
-## 4.0.0 - unreleased
+## 4.0.0 - 2026-07-25
 
 ### Added
 

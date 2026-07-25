@@ -56,6 +56,7 @@ Using this library, you can export arrays, collections and models to a XLSX-file
 
 | Version | PHP    | Laravel |
 |---------|--------|---------|
+| 4.x     | >= 8.1 | 10 – 13 |
 | 3.x     | >= 8.1 | 10 – 13 |
 | 2.x     | >= 7.4 | 6 – 13  |
 
