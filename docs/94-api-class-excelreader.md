@@ -1,12 +1,16 @@
 # Class \avadim\FastExcelLaravel\ExcelReader
 
+<!-- Hand-maintained. The wrapper delegates via __call, which a reflection-based
+     generator cannot represent, so do not auto-generate this page; edit it by hand
+     when the class changes. -->
+
 ---
 
 `ExcelReader` is a thin Laravel wrapper around a **FastExcelReader** book. It does not extend a concrete
 reader; instead it **composes** an `avadim\FastExcelReader\AbstractBook` and adds the Eloquent-aware import
 helpers. Because it relies only on the shared `AbstractBook` / `AbstractSheet` public API, the same wrapper
 works for every format the reader supports — **XLSX and legacy XLS (Excel 97-2003)** — and the format is
-detected automatically from the file signature.
+detected automatically from the file signature (see [Reading legacy XLS files](80-reading-xls.md)).
 
 Any method that is not listed below is transparently forwarded to the wrapped `AbstractBook` (see
 [Delegated methods](#delegated-methods)).

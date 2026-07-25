@@ -2,9 +2,9 @@
 
 ---
 
-* [__construct()](#__construct) – Excel constructor
-* [create()](#create) – Create new XLSX-file for export
-* [open()](#open) – Open an existing workbook (XLSX or legacy XLS) for import
+* [__construct()](#__construct) -- Excel constructor
+* [create()](#create) -- Create new XLSX-file for export
+* [open()](#open) -- Open an existing workbook (XLSX or legacy XLS) for import
 
 ---
 

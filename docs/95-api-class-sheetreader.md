@@ -1,5 +1,9 @@
 # Class \avadim\FastExcelLaravel\SheetReader
 
+<!-- Hand-maintained. The wrapper delegates via __call, which a reflection-based
+     generator cannot represent, so do not auto-generate this page; edit it by hand
+     when the class changes. -->
+
 ---
 
 `SheetReader` is a thin Laravel wrapper around a **FastExcelReader** sheet. It does not extend a concrete
@@ -125,7 +129,7 @@ _None_
 ```php
 public function __construct(\avadim\FastExcelReader\AbstractSheet $sheet, ExcelReader $excel)
 ```
-_Wraps a sheet owned by an [ExcelReader](92-api-class-excelreader.md). Created internally by
+_Wraps a sheet owned by an [ExcelReader](94-api-class-excelreader.md). Created internally by
 `ExcelReader::sheet()` / `ExcelReader::wrapSheet()`; you normally do not construct it directly._
 
 ### Parameters

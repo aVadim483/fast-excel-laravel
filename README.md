@@ -275,7 +275,7 @@ If the first row contains the names of the fields you can apply these using meth
 
 ```Excel::open()``` reads both XLSX and legacy XLS (Excel 97-2003) files — the format is detected 
 automatically from the file signature, so the file extension does not matter. All the import methods 
-below work the same way regardless of the source format.
+below work the same way regardless of the source format (see [Reading legacy XLS files](/docs/80-reading-xls.md)).
 
 ![import.jpg](import.jpg)
 
