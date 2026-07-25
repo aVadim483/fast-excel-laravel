@@ -1,0 +1,54 @@
+# Изменения
+
+[🇬🇧 English](CHANGELOG.md) · 🇷🇺 Русский
+
+<!-- NOTE for maintainers: this file exists in two languages.
+     When editing CHANGELOG.ru.md, please update CHANGELOG.md accordingly.
+     Code and identifiers must stay byte-for-byte identical in both versions; only prose is translated. -->
+
+Все значимые изменения проекта фиксируются в этом файле.
+
+Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+проект придерживается [семантического версионирования](https://semver.org/spec/v2.0.0.html).
+Более раннюю историю см. на
+[странице релизов](https://github.com/aVadim483/fast-excel-laravel/releases).
+
+## 4.0.0 — не выпущено
+
+### Добавлено
+
+* **Чтение устаревших книг XLS (Excel 97-2003, BIFF8).** `\Excel::open()` теперь принимает и XLS, и XLSX;
+  формат определяется по сигнатуре файла, поэтому расширение игнорируется, а весь API импорта
+  (`importModel()`, `withHeadings()`, `mapping()`, области чтения, `readRows()`, `nextRow()`, …) работает для
+  обоих форматов одинаково. Запись XLS не поддерживается — экспорт по-прежнему только в XLSX. См.
+  [docs/80-reading-xls.md](docs/80-reading-xls.md).
+
+### Изменено
+
+* Требование к `avadim/fast-excel-reader` поднято до `^4.0`.
+* **`ExcelReader` и `SheetReader` теперь используют композицию вместо наследования.** Они оборачивают
+  `avadim\FastExcelReader\AbstractBook` / `AbstractSheet` и делегируют любой не определённый в обёртке вызов,
+  поэтому одна реализация обслуживает все форматы reader'а. Классы writer'а не изменились.
+
+### Несовместимые изменения (BREAKING)
+
+* **`ExcelReader` больше не наследует `\avadim\FastExcelReader\Excel`, а `SheetReader` больше не наследует
+  `\avadim\FastExcelReader\Sheet`.** Поэтому объекты, возвращаемые `\Excel::open()` и `->sheet()`, больше не
+  являются экземплярами этих классов reader'а.
+* Статические хелперы, ранее унаследованные обёрткой (`ExcelReader::validate()`, `::colLetter()`,
+  `::colNum()`, `::createReader()`, `::setTempDir()`, …), удалены. Вызывайте их напрямую у
+  `\avadim\FastExcelReader\Excel`.
+* Константы класса, ранее унаследованные обёрткой (`ExcelReader::KEYS_*`), удалены. Обращайтесь к ним через
+  `\avadim\FastExcelReader\Excel` (этот путь работал всегда и не изменился).
+* Внутренняя фабрика `ExcelReader::createSheet()` удалена (reader больше не создаёт листы обёртки).
+
+### Руководство по обновлению (3.x → 4.x)
+
+* Обычное использование не меняется: `\Excel::open()`, `->withHeadings()`, `->mapping()`, `->importModel()`,
+  `->readRows()`, `->from()`, `->setDateFormat()`, `['temp_dir' => …]` и остальные документированные вызовы
+  работают как прежде.
+* Если ваш код тайпхинтит или проверяет `instanceof` на `\avadim\FastExcelReader\Excel` / `\Sheet` для
+  значений из этого пакета, замените их на `\avadim\FastExcelLaravel\ExcelReader` /
+  `\avadim\FastExcelLaravel\SheetReader`.
+* Если ваш код обращался к унаследованным статическим хелперам или константам `KEYS_*` через класс обёртки,
+  перенесите эти обращения на `\avadim\FastExcelReader\Excel`.

@@ -1,5 +1,11 @@
 # Changelog
 
+🇬🇧 English · [🇷🇺 Русский](CHANGELOG.ru.md)
+
+<!-- NOTE for maintainers: this file exists in two languages.
+     When editing CHANGELOG.md, please update CHANGELOG.ru.md accordingly.
+     Code and identifiers must stay byte-for-byte identical in both versions; only prose is translated. -->
+
 All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
