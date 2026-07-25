@@ -1,5 +1,7 @@
 # Class \avadim\FastExcelLaravel\SheetWriter
 
+<!-- Hand-maintained. Do not auto-generate; edit by hand when the class changes. -->
+
 ---
 
 * [__construct()](#__construct) -- Sheet constructor
