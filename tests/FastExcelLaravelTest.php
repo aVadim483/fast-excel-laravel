@@ -381,6 +381,37 @@ class FastExcelLaravelTest extends TestCase
     }
 
 
+    public function testImportModelFromXls()
+    {
+        // Legacy XLS (Excel 97-2003) must be read through the wrapper exactly like XLSX:
+        // the format is detected from the file signature, not the extension.
+        $file = storage_path('test_import.xls');
+        $this->assertTrue(file_exists($file));
+        $this->assertTrue(ExcelReader::isXls($file));
+
+        $excel = Excel::open($file);
+        $this->assertInstanceOf(\avadim\FastExcelLaravel\ExcelReader::class, $excel);
+        $this->assertInstanceOf(\avadim\FastExcelLaravel\SheetReader::class, $excel->sheet());
+        $this->assertEquals('Sheet1', $excel->sheet()->name());
+
+        // Delegated read methods work on XLS
+        $rows = $excel->readRows();
+        $this->assertCount(4, $rows); // header + 3 data rows
+        $this->assertEquals('James Bond', $rows[2]['B']);
+
+        // withHeadings() + importModel() work on XLS
+        FakeModel::$storage = [];
+        $excel->withHeadings()->importModel(FakeModel::class);
+        $this->assertCount(3, FakeModel::$storage);
+        $this->assertEquals('James Bond', FakeModel::$storage[0]->name);
+
+        // mapping()->from()->readRows() chain stays "sticky" on XLS
+        $excel2 = Excel::open($file);
+        $mapped = $excel2->mapping(['B' => 'name'])->from('A2')->readRows();
+        $this->assertEquals('James Bond', $mapped[2]['name']);
+    }
+
+
     public function testExportImport()
     {
         $data = $this->getDataArray();
