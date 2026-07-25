@@ -2,141 +2,34 @@
 
 ---
 
-* [__construct()](#__construct) -- Excel constructor
-* [colLetter()](#colletter) -- Convert column number to letter
-* [colNum()](#colnum) -- Converts an alphabetic column index to a numeric
-* [createReader()](#createreader)
-* [createSheet()](#createsheet) -- Create SheetReader instance
-* [open()](#open) -- Open XLSX file for import
-* [setTempDir()](#settempdir) -- Set dir for temporary files
-* [validate()](#validate)
-* [countExtraImages()](#countextraimages)
-* [countImages()](#countimages) -- Returns the total count of images in the workbook
-* [dateFormatter()](#dateformatter) -- Sets custom date formatter
-* [formatDate()](#formatdate)
-* [from()](#from) -- Set top left of read area
-* [getCompleteStyleByIdx()](#getcompletestylebyidx)
-* [getDateFormat()](#getdateformat)
-* [getDateFormatPattern()](#getdateformatpattern)
-* [getDateFormatter()](#getdateformatter)
-* [getDefinedNames()](#getdefinednames) -- Returns defined names of workbook
-* [getFirstSheet()](#getfirstsheet) -- Returns the first sheet as default
-* [getFormatPattern()](#getformatpattern)
-* [getImageList()](#getimagelist) -- Returns the list of images from the workbook
-* [getSheet()](#getsheet) -- Returns a sheet by name
-* [getSheetById()](#getsheetbyid) -- Returns a sheet by ID
-* [getSheetNames()](#getsheetnames) -- Returns names array of all sheets
-* [hasDrawings()](#hasdrawings) -- Returns TRUE if the workbook contains an any draw objects (not images only)
-* [hasExtraImages()](#hasextraimages)
-* [hasImages()](#hasimages) -- Returns TRUE if any sheet contains an image object
-* [importModel()](#importmodel) -- Import data into a model from the current sheet
-* [innerFileList()](#innerfilelist)
-* [mapping()](#mapping) -- Set mapping callback for the current sheet
-* [mediaImageFiles()](#mediaimagefiles)
-* [metadataImage()](#metadataimage)
-* [readCallback()](#readcallback) -- Reads cell values and passes them to a callback function
-* [readCells()](#readcells) -- Returns the values of all cells as array
-* [readCellStyles()](#readcellstyles) -- Returns the styles of all cells as array
-* [readCellsWithStyles()](#readcellswithstyles) -- Returns the values and styles of all cells as array
-* [readColumns()](#readcolumns) -- Returns cell values as a two-dimensional array from default sheet
-* [readColumnsWithStyles()](#readcolumnswithstyles) -- Returns cell values and styles as a two-dimensional array from default sheet
-* [readRows()](#readrows) -- Returns cell values as a two-dimensional array from default sheet
-* [readRowsWithStyles()](#readrowswithstyles) -- Returns cell values and styles as a two-dimensional array from default sheet
-* [readStyles()](#readstyles)
-* [selectFirstSheet()](#selectfirstsheet) -- Selects the first sheet as default
-* [selectSheet()](#selectsheet) -- Selects default sheet by name
-* [selectSheetById()](#selectsheetbyid) -- Selects default sheet by ID
-* [setDateFormat()](#setdateformat)
-* [setReadArea()](#setreadarea) -- Set top left and right bottom of read area
-* [sharedString()](#sharedstring) -- Returns string by index
-* [sheet()](#sheet) -- Returns current or specified sheet
-* [sheets()](#sheets) -- Array of all sheets
-* [styleByIdx()](#stylebyidx) -- Returns a style array by style Idx
-* [timestamp()](#timestamp) -- Convert date to timestamp
+`ExcelReader` is a thin Laravel wrapper around a **FastExcelReader** book. It does not extend a concrete
+reader; instead it **composes** an `avadim\FastExcelReader\AbstractBook` and adds the Eloquent-aware import
+helpers. Because it relies only on the shared `AbstractBook` / `AbstractSheet` public API, the same wrapper
+works for every format the reader supports — **XLSX and legacy XLS (Excel 97-2003)** — and the format is
+detected automatically from the file signature.
+
+Any method that is not listed below is transparently forwarded to the wrapped `AbstractBook` (see
+[Delegated methods](#delegated-methods)).
+
+> **Upgrade note.** Up to and including 3.x `ExcelReader` extended `\avadim\FastExcelReader\Excel`. It no
+> longer does, so it is **not** an instance of that class anymore. Type-hint on
+> `\avadim\FastExcelLaravel\ExcelReader` instead. Static helpers that used to be inherited
+> (`validate()`, `colLetter()`, `colNum()`, `setTempDir()`, …) now live only on
+> `\avadim\FastExcelReader\Excel`.
+
+---
+
+Own methods:
+
+* [open()](#open) -- Open a workbook (XLSX or XLS) for import
+* [sheet()](#sheet) -- Returns the current or a named sheet as a SheetReader
 * [withHeadings()](#withheadings) -- Set headings for the current sheet
-
----
-
-## __construct()
-
----
-
-```php
-public function __construct(?string $file = null, ?string $tempDir = '')
-```
-_Excel constructor_
-
-### Parameters
-
-* `string|null $file`
-* `string|null $tempDir`
-
----
-
-## colLetter()
-
----
-
-```php
-public static function colLetter(int $colNumber): string
-```
-_Convert column number to letter_
-
-### Parameters
-
-* `int $colNumber` -- ONE based
-
----
-
-## colNum()
-
----
-
-```php
-public static function colNum(string $colLetter): int
-```
-_Converts an alphabetic column index to a numeric_
-
-### Parameters
-
-* `string $colLetter`
-
----
-
-## createReader()
-
----
-
-```php
-public static function createReader(string $file, 
-                                    ?array $parserProperties = []): avadim\FastExcelReader\Interfaces\InterfaceXmlReader
-```
-
-
-### Parameters
-
-* `string $file`
-* `array|null $parserProperties`
-
----
-
-## createSheet()
-
----
-
-```php
-public static function createSheet(string $sheetName, $sheetId, $file, $path, 
-                                   $excel): SheetReader
-```
-_Create SheetReader instance_
-
-### Parameters
-
-* `string $sheetName`
-* `$sheetId`
-* `$file`
-* `$path`
-* `$excel`
+* [mapping()](#mapping) -- Set mapping callback for the current sheet
+* [importModel()](#importmodel) -- Import data into a model from the current sheet
+* [readRows()](#readrows) -- Read rows from the current sheet (applies the mapping, if any)
+* [getBook()](#getbook) -- Returns the wrapped book instance
+* [wrapSheet()](#wrapsheet) -- Wraps a book sheet in a SheetReader (used internally)
+* [__construct()](#__construct)
 
 ---
 
@@ -145,667 +38,17 @@ _Create SheetReader instance_
 ---
 
 ```php
-public static function open(string $file): ExcelReader
+public static function open(string $file, ?array $options = []): ExcelReader
 ```
-_Open XLSX file for import_
+_Open a workbook for import. The reader is selected from the file signature, so XLSX and XLS are opened the
+same way; the file extension is ignored._
 
 ### Parameters
 
 * `string $file`
-
----
-
-## setTempDir()
-
----
-
-```php
-public static function setTempDir($tempDir)
-```
-_Set dir for temporary files_
-
-### Parameters
-
-* `$tempDir`
-
----
-
-## validate()
-
----
-
-```php
-public static function validate(string $file, ?array &$errors = []): bool
-```
-
-
-### Parameters
-
-* `string $file`
-* `array|null $errors`
-
----
-
-## countExtraImages()
-
----
-
-```php
-public function countExtraImages(): int
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## countImages()
-
----
-
-```php
-public function countImages(): int
-```
-_Returns the total count of images in the workbook_
-
-### Parameters
-
-_None_
-
----
-
-## dateFormatter()
-
----
-
-```php
-public function dateFormatter($formatter): avadim\FastExcelReader\Excel
-```
-_Sets custom date formatter_
-
-### Parameters
-
-* `\Closure|callable|string|bool $formatter`
-
----
-
-## formatDate()
-
----
-
-```php
-public function formatDate($value, $format, $styleIdx): false|mixed|string
-```
-
-
-### Parameters
-
-* `$value`
-* `$format`
-* `$styleIdx`
-
----
-
-## from()
-
----
-
-```php
-public function from(string $topLeftCell, 
-                     ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Set top left of read area_
-
-### Parameters
-
-* `string $topLeftCell`
-* `bool|null $firstRowKeys`
-
----
-
-## getCompleteStyleByIdx()
-
----
-
-```php
-public function getCompleteStyleByIdx(int $styleIdx, 
-                                      ?bool $flat = false): array
-```
-
-
-### Parameters
-
-* `int $styleIdx`
-* `bool|null $flat`
-
----
-
-## getDateFormat()
-
----
-
-```php
-public function getDateFormat(): ?string
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## getDateFormatPattern()
-
----
-
-```php
-public function getDateFormatPattern(int $styleIdx): ?string
-```
-
-
-### Parameters
-
-* `int $styleIdx`
-
----
-
-## getDateFormatter()
-
----
-
-```php
-public function getDateFormatter(): callable|\Closure|bool|null
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## getDefinedNames()
-
----
-
-```php
-public function getDefinedNames(): array
-```
-_Returns defined names of workbook_
-
-### Parameters
-
-_None_
-
----
-
-## getFirstSheet()
-
----
-
-```php
-public function getFirstSheet(?string $areaRange = null, 
-                              ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Returns the first sheet as default_
-
-### Parameters
-
-* `string|null $areaRange`
-* `bool|null $firstRowKeys`
-
----
-
-## getFormatPattern()
-
----
-
-```php
-public function getFormatPattern(int $styleIdx): mixed|string
-```
-
-
-### Parameters
-
-* `int $styleIdx`
-
----
-
-## getImageList()
-
----
-
-```php
-public function getImageList(): array
-```
-_Returns the list of images from the workbook_
-
-### Parameters
-
-_None_
-
----
-
-## getSheet()
-
----
-
-```php
-public function getSheet(?string $name = null, ?string $areaRange = null, 
-                         ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Returns a sheet by name_
-
-### Parameters
-
-* `string|null $name`
-* `string|null $areaRange`
-* `bool|null $firstRowKeys`
-
----
-
-## getSheetById()
-
----
-
-```php
-public function getSheetById(int $sheetId, ?string $areaRange = null, 
-                             ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Returns a sheet by ID_
-
-### Parameters
-
-* `int $sheetId`
-* `string|null $areaRange`
-* `bool|null $firstRowKeys`
-
----
-
-## getSheetNames()
-
----
-
-```php
-public function getSheetNames(): array
-```
-_Returns names array of all sheets_
-
-### Parameters
-
-_None_
-
----
-
-## hasDrawings()
-
----
-
-```php
-public function hasDrawings(): bool
-```
-_Returns TRUE if the workbook contains an any draw objects (not images only)_
-
-### Parameters
-
-_None_
-
----
-
-## hasExtraImages()
-
----
-
-```php
-public function hasExtraImages(): bool
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## hasImages()
-
----
-
-```php
-public function hasImages(): bool
-```
-_Returns TRUE if any sheet contains an image object_
-
-### Parameters
-
-_None_
-
----
-
-## importModel()
-
----
-
-```php
-public function importModel(string $modelClass, $address, 
-                            $columns): ExcelReader
-```
-_Import data into a model from the current sheet_
-
-### Parameters
-
-* `string $modelClass`
-* `string|bool|null $address`
-* `array|bool|null $columns`
-
----
-
-## innerFileList()
-
----
-
-```php
-public function innerFileList(): array
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## mapping()
-
----
-
-```php
-public function mapping($callback): ExcelReader
-```
-_Set mapping callback for the current sheet_
-
-### Parameters
-
-* `$callback`
-
----
-
-## mediaImageFiles()
-
----
-
-```php
-public function mediaImageFiles(): array
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## metadataImage()
-
----
-
-```php
-public function metadataImage(int $vmIndex): ?string
-```
-
-
-### Parameters
-
-* `int $vmIndex`
-
----
-
-## readCallback()
-
----
-
-```php
-public function readCallback(callable $callback, ?int $resultMode = null, 
-                             ?bool $styleIdxInclude = null)
-```
-_Reads cell values and passes them to a callback function_
-
-### Parameters
-
-* `callback $callback`
-* `int|null $resultMode`
-* `bool|null $styleIdxInclude`
-
----
-
-## readCells()
-
----
-
-```php
-public function readCells(): array
-```
-_Returns the values of all cells as array_
-
-### Parameters
-
-_None_
-
----
-
-## readCellStyles()
-
----
-
-```php
-public function readCellStyles(?bool $flat = false): array
-```
-_Returns the styles of all cells as array_
-
-### Parameters
-
-* `bool|null $flat`
-
----
-
-## readCellsWithStyles()
-
----
-
-```php
-public function readCellsWithStyles(): array
-```
-_Returns the values and styles of all cells as array_
-
-### Parameters
-
-_None_
-
----
-
-## readColumns()
-
----
-
-```php
-public function readColumns($columnKeys, ?int $resultMode = null): array
-```
-_Returns cell values as a two-dimensional array from default sheet \[col]\[row]_
-
-### Parameters
-
-* `array|bool|int|null $columnKeys`
-* `int|null $resultMode`
-
----
-
-## readColumnsWithStyles()
-
----
-
-```php
-public function readColumnsWithStyles($columnKeys, 
-                                      ?int $resultMode = null): array
-```
-_Returns cell values and styles as a two-dimensional array from default sheet \[col]\[row]_
-
-### Parameters
-
-* `array|bool|int|null $columnKeys`
-* `int|null $resultMode`
-
----
-
-## readRows()
-
----
-
-```php
-public function readRows($columnKeys, ?int $resultMode = null, 
-                         ?bool $styleIdxInclude = null): array
-```
-_Returns cell values as a two-dimensional array from default sheet \[row]\[col]readRows()readRows(true)readRows(false, Excel::KEYS_ZERO_BASED)readRows(Excel::KEYS_ZERO_BASED | Excel::KEYS_RELATIVE)_
-
-### Parameters
-
-* `array|bool|int|null $columnKeys`
-* `int|null $resultMode`
-* `bool|null $styleIdxInclude`
-
----
-
-## readRowsWithStyles()
-
----
-
-```php
-public function readRowsWithStyles($columnKeys, 
-                                   ?int $resultMode = null): array
-```
-_Returns cell values and styles as a two-dimensional array from default sheet \[row]\[col]_
-
-### Parameters
-
-* `array|bool|int|null $columnKeys`
-* `int|null $resultMode`
-
----
-
-## readStyles()
-
----
-
-```php
-public function readStyles(): array
-```
-
-
-### Parameters
-
-_None_
-
----
-
-## selectFirstSheet()
-
----
-
-```php
-public function selectFirstSheet(?string $areaRange = null, 
-                                 ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Selects the first sheet as default_
-
-### Parameters
-
-* `string|null $areaRange`
-* `bool|null $firstRowKeys`
-
----
-
-## selectSheet()
-
----
-
-```php
-public function selectSheet(string $name, ?string $areaRange = null, 
-                            ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Selects default sheet by name_
-
-### Parameters
-
-* `string $name`
-* `string|null $areaRange`
-* `bool|null $firstRowKeys`
-
----
-
-## selectSheetById()
-
----
-
-```php
-public function selectSheetById(int $sheetId, ?string $areaRange = null, 
-                                ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Selects default sheet by ID_
-
-### Parameters
-
-* `int $sheetId`
-* `string|null $areaRange`
-* `bool|null $firstRowKeys`
-
----
-
-## setDateFormat()
-
----
-
-```php
-public function setDateFormat(string $dateFormat): avadim\FastExcelReader\Excel
-```
-
-
-### Parameters
-
-* `string $dateFormat`
-
----
-
-## setReadArea()
-
----
-
-```php
-public function setReadArea(string $areaRange, 
-                            ?bool $firstRowKeys = false): avadim\FastExcelReader\Sheet
-```
-_Set top left and right bottom of read area_
-
-### Parameters
-
-* `string $areaRange`
-* `bool|null $firstRowKeys`
-
----
-
-## sharedString()
-
----
-
-```php
-public function sharedString($stringId): ?string
-```
-_Returns string by index_
-
-### Parameters
-
-* `$stringId`
+* `array|null $options` -- supported keys: `temp_dir` (directory for temporary files used when reading XLSX;
+  falls back to the `fast-excel.temp_dir` config value). XLS is read straight from the file and never uses a
+  temp dir.
 
 ---
 
@@ -814,58 +57,14 @@ _Returns string by index_
 ---
 
 ```php
-public function sheet(?string $name = null): ?avadim\FastExcelReader\Sheet
+public function sheet(?string $name = null): ?SheetReader
 ```
-_Returns current or specified sheet_
+_Returns the current sheet, or the sheet with the given name, wrapped in a [SheetReader](95-api-class-sheetreader.md).
+Returns `null` if the named sheet does not exist._
 
 ### Parameters
 
 * `string|null $name`
-
----
-
-## sheets()
-
----
-
-```php
-public function sheets(): array
-```
-_Array of all sheets_
-
-### Parameters
-
-_None_
-
----
-
-## styleByIdx()
-
----
-
-```php
-public function styleByIdx($styleIdx): array
-```
-_Returns a style array by style Idx_
-
-### Parameters
-
-* `$styleIdx`
-
----
-
-## timestamp()
-
----
-
-```php
-public function timestamp($excelDateTime): int
-```
-_Convert date to timestamp_
-
-### Parameters
-
-* `$excelDateTime`
 
 ---
 
@@ -876,7 +75,9 @@ _Convert date to timestamp_
 ```php
 public function withHeadings(?array $headers = []): ExcelReader
 ```
-_Set headings for the current sheet_
+_Set headings for the current sheet. The first row of the read area is always skipped; if `$headers` is not
+empty, these names are used as attribute names (in column order) instead of the values of the first row.
+The setting applies to the next import operation only._
 
 ### Parameters
 
@@ -884,3 +85,119 @@ _Set headings for the current sheet_
 
 ---
 
+## mapping()
+
+---
+
+```php
+public function mapping($callback): ExcelReader
+```
+_Set a mapping for the current sheet. Accepts a callback `function (array $row): array` or an array of
+`column => attribute` correspondences. The setting applies to `importModel()` and `readRows()`._
+
+### Parameters
+
+* `\Closure|callable|array $callback`
+
+---
+
+## importModel()
+
+---
+
+```php
+public function importModel(string $modelClass, $address = null, $columns = null): ExcelReader
+```
+_Import data from the current sheet into a model: a new model is filled and saved for each row
+(`fill()` + `save()`)._
+
+### Parameters
+
+* `string $modelClass`
+* `string|bool|null $address` -- read area, e.g. `'B:D'`, `'B4'`, `'B4:D7'`
+* `array|bool|null $columns`
+
+---
+
+## readRows()
+
+---
+
+```php
+public function readRows($columnKeys = [], ?int $resultMode = null, ?bool $styleIdxInclude = null): array
+```
+_Returns cell values of the current sheet as a two-dimensional array `[row][col]`. If a mapping is set, it is
+applied to every row._
+
+### Parameters
+
+* `array|bool|int|null $columnKeys`
+* `int|null $resultMode`
+* `bool|null $styleIdxInclude`
+
+---
+
+## getBook()
+
+---
+
+```php
+public function getBook(): \avadim\FastExcelReader\AbstractBook
+```
+_Returns the wrapped book instance (an `avadim\FastExcelReader\Excel` for XLSX or
+`avadim\FastExcelReader\Xls\XlsBook` for XLS)._
+
+### Parameters
+
+_None_
+
+---
+
+## wrapSheet()
+
+---
+
+```php
+public function wrapSheet(\avadim\FastExcelReader\AbstractSheet $sheet): SheetReader
+```
+_Wraps a sheet returned by the book in a [SheetReader](95-api-class-sheetreader.md), reusing the wrapper so
+that state set on a sheet (headings, mapping) survives later access to the same sheet. Called internally; you
+normally use [sheet()](#sheet) instead._
+
+### Parameters
+
+* `\avadim\FastExcelReader\AbstractSheet $sheet`
+
+---
+
+## __construct()
+
+---
+
+```php
+public function __construct(\avadim\FastExcelReader\AbstractBook $book)
+```
+_Wraps an already opened book. Use the static [open()](#open) factory instead of constructing directly._
+
+### Parameters
+
+* `\avadim\FastExcelReader\AbstractBook $book`
+
+---
+
+## Delegated methods
+
+Every reading method not listed above is forwarded to the wrapped `AbstractBook` via `__call`. When a
+delegated call returns a sheet (or a list of sheets), the result is re-wrapped in a
+[SheetReader](95-api-class-sheetreader.md) so fluent chains keep working, e.g.:
+
+```php
+$excel->mapping($callback)->from('A2')->readRows();
+```
+
+The full list of delegated methods — `getSheetNames()`, `getSheet()`, `selectSheet()`, `setReadArea()`,
+`from()`, `readCells()`, `readColumns()`, `readCallback()`, `getDefinedNames()`, `setDateFormat()`,
+`dateFormatter()`, image and style helpers, and so on — is documented in the underlying **FastExcelReader**
+library: https://github.com/aVadim483/fast-excel-reader#readme
+
+---

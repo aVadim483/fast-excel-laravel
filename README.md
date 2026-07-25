@@ -43,6 +43,7 @@ Using this library, you can export arrays, collections and models to a XLSX-file
   * Inserting multiple charts
   * Supports data validations and conditional formatting
 * Reading
+  * Reads both XLSX and legacy XLS (Excel 97-2003); the format is detected automatically from the file signature
   * Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
   * Automatic field detection from imported table headers
   * Import huge files very fast, and using a minimum of memory
@@ -272,10 +273,14 @@ public function export()
 To import models, you can use method ```importModel()```. 
 If the first row contains the names of the fields you can apply these using method ```withHeadings()``` 
 
+```Excel::open()``` reads both XLSX and legacy XLS (Excel 97-2003) files — the format is detected 
+automatically from the file signature, so the file extension does not matter. All the import methods 
+below work the same way regardless of the source format.
+
 ![import.jpg](import.jpg)
 
 ```php
-// Open XLSX-file 
+// Open a workbook (XLSX or legacy XLS — the format is detected automatically)
 $excel = Excel::open($file);
 
 // Import a workbook to User model using the first row as attribute names

@@ -2,16 +2,52 @@
 
 namespace avadim\FastExcelLaravel;
 
+use avadim\FastExcelReader\AbstractSheet;
+use avadim\FastExcelReader\Excel as FastExcelReader;
 use Illuminate\Database\Eloquent\Model;
 
-class SheetReader extends \avadim\FastExcelReader\Sheet
+/**
+ * Laravel wrapper around a FastExcelReader sheet.
+ *
+ * Composes an AbstractSheet (XLSX, XLS, ...) and adds the Eloquent-aware import
+ * helpers. Every call the wrapper does not define is delegated to the wrapped
+ * sheet; a sheet returned by such a call is re-wrapped through the owning book so
+ * fluent chains keep their Laravel-specific state.
+ *
+ * @mixin AbstractSheet
+ */
+class SheetReader
 {
+    protected AbstractSheet $sheet;
+
+    protected ExcelReader $excel;
+
     private int $resultMode = 0;
 
     private array $customHeaders = [];
 
     /** @var mixed|null */
     private $mappingCallback = null;
+
+    /**
+     * @param AbstractSheet $sheet
+     * @param ExcelReader $excel
+     */
+    public function __construct(AbstractSheet $sheet, ExcelReader $excel)
+    {
+        $this->sheet = $sheet;
+        $this->excel = $excel;
+    }
+
+    /**
+     * Return the wrapped sheet instance
+     *
+     * @return AbstractSheet
+     */
+    public function getSheet(): AbstractSheet
+    {
+        return $this->sheet;
+    }
 
     /**
      * Set headings for the sheet. The first row of the read area is always skipped;
@@ -24,7 +60,7 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
      */
     public function withHeadings(?array $headers = []): SheetReader
     {
-        $this->resultMode = \avadim\FastExcelReader\Excel::KEYS_FIRST_ROW;
+        $this->resultMode = FastExcelReader::KEYS_FIRST_ROW;
         $this->customHeaders = $headers ? array_values($headers) : [];
 
         return $this;
@@ -76,9 +112,9 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
     public function importModel($modelClass, $address = null, $columns = null): SheetReader
     {
         if ($address && is_string($address)) {
-            $this->setReadArea($address);
+            $this->sheet->setReadArea($address);
         }
-        foreach ($this->nextRow($columns, $this->resultMode) as $rowData) {
+        foreach ($this->sheet->nextRow($columns, $this->resultMode) as $rowData) {
             /** @var Model $model */
             $model = new $modelClass;
             if ($this->customHeaders) {
@@ -115,7 +151,7 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
     }
 
     /**
-     * Returns cell values as a two-dimensional array
+     * Returns cell values as a two-dimensional array (applies the mapping, if any)
      *
      * @param array|bool|int|null $columnKeys
      * @param int|null $resultMode
@@ -125,7 +161,7 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
      */
     public function readRows($columnKeys = [], ?int $resultMode = null, ?bool $styleIdxInclude = null): array
     {
-        $rows = parent::readRows($columnKeys, $resultMode, $styleIdxInclude);
+        $rows = $this->sheet->readRows($columnKeys, $resultMode, $styleIdxInclude);
         if ($this->mappingCallback) {
             foreach ($rows as $rowNum => $rowData) {
                 $rows[$rowNum] = call_user_func($this->mappingCallback, $rowData);
@@ -133,5 +169,27 @@ class SheetReader extends \avadim\FastExcelReader\Sheet
         }
 
         return $rows;
+    }
+
+    /**
+     * Delegate every other call to the wrapped sheet, re-wrapping any sheet it
+     * returns so fluent chains keep the wrapper (and its state)
+     *
+     * @param string $name
+     * @param array $arguments
+     *
+     * @return mixed
+     */
+    public function __call(string $name, array $arguments)
+    {
+        $result = $this->sheet->$name(...$arguments);
+        if ($result === $this->sheet) {
+            return $this;
+        }
+        if ($result instanceof AbstractSheet) {
+            return $this->excel->wrapSheet($result);
+        }
+
+        return $result;
     }
 }

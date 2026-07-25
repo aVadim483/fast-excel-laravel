@@ -4,7 +4,7 @@
 
 * [__construct()](#__construct) – Excel constructor
 * [create()](#create) – Create new XLSX-file for export
-* [open()](#open) – Open an existing XLSX-file for import
+* [open()](#open) – Open an existing workbook (XLSX or legacy XLS) for import
 
 ---
 
@@ -46,7 +46,8 @@ _Create new XLSX-file for export_
 ```php
 public static function open(string $file, ?array $options = []): ExcelReader
 ```
-_Open an existing XLSX-file for import_
+_Open an existing workbook (XLSX or legacy XLS) for import. The format is detected automatically from the file
+signature, so the file extension does not matter._
 
 ### Parameters
 
