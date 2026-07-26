@@ -43,7 +43,7 @@ Using this library, you can export arrays, collections and models to a XLSX-file
   * Inserting multiple charts
   * Supports data validations and conditional formatting
 * Reading
-  * Reads both XLSX and legacy XLS (Excel 97-2003); the format is detected automatically from the file signature
+  * Reads XLSX, legacy XLS (Excel 97-2003) and CSV; the spreadsheet format is detected automatically from the file
   * Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
   * Automatic field detection from imported table headers
   * Import huge files very fast, and using a minimum of memory
@@ -100,6 +100,7 @@ Jump To:
   * [Import a Model](#import-a-model)
   * [Mapping Import Data](#mapping-import-data)
   * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
+  * [Reading CSV files](#reading-csv-files)
 * [Configuration](#configuration)
 * [More Features](#more-features)
 * [Do you want to support FastExcelLaravel?](#do-you-want-to-support-fastexcellaravel)
@@ -274,14 +275,15 @@ public function export()
 To import models, you can use method ```importModel()```. 
 If the first row contains the names of the fields you can apply these using method ```withHeadings()``` 
 
-```Excel::open()``` reads both XLSX and legacy XLS (Excel 97-2003) files — the format is detected 
-automatically from the file signature, so the file extension does not matter. All the import methods 
-below work the same way regardless of the source format (see [Reading legacy XLS files](/docs/80-reading-xls.md)).
+```Excel::open()``` reads XLSX, legacy XLS (Excel 97-2003) and CSV files — the format is detected 
+automatically from the file content, so the file extension does not matter. All the import methods 
+below work the same way regardless of the source format (see [Reading legacy XLS files](/docs/80-reading-xls.md) 
+and [Reading CSV files](/docs/81-reading-csv.md)).
 
 ![import.jpg](import.jpg)
 
 ```php
-// Open a workbook (XLSX or legacy XLS — the format is detected automatically)
+// Open a workbook (XLSX, legacy XLS or CSV — the format is detected automatically)
 $excel = Excel::open($file);
 
 // Import a workbook to User model using the first row as attribute names
@@ -353,6 +355,27 @@ foreach ($sheet->nextRow() as $rowNum => $rowData) {
 }
 ```
 
+### Reading CSV files
+
+A CSV file has no signature, so ```Excel::open()``` treats any file that is neither XLSX nor XLS as CSV.
+The whole import API — `withHeadings()`, `mapping()`, `importModel()`, read areas, `readRows()`, `nextRow()` —
+works exactly as it does for XLSX and XLS.
+
+```php
+// A CSV file is detected automatically (no XLSX/XLS signature)
+$excel = \Excel::open(storage_path('users.csv'));
+$excel->withHeadings()->importModel(User::class);
+
+// CSV options (delimiter, enclosure, encoding, ...) are passed as the second argument
+$excel = \Excel::open($file, ['delimiter' => ';', 'encoding' => 'CP1251']);
+$rows = $excel->readRows(true);
+```
+
+CSV reading requires `avadim/fast-excel-reader` `^4.2` (installed automatically). Global defaults for the CSV
+options can be set in `config('fast-excel.csv')`. Note that CSV carries no cell types or styles, so every
+value is read as a string; writing CSV is not supported (export is XLSX only).
+See [Reading CSV files](/docs/81-reading-csv.md).
+
 ## Configuration
 
 Optionally you can publish the config file
@@ -368,6 +391,16 @@ return [
     // Directory for temporary files created while reading and writing XLSX.
     // When null, storage_path('app/tmp/fast-excel') is used
     'temp_dir' => null,
+
+    // Default options applied when reading CSV (merged into the options passed to
+    // open(); a per-call option wins, a null value here keeps the reader default)
+    'csv' => [
+        'delimiter'        => null,   // null = auto-detect
+        'enclosure'        => '"',
+        'encoding'         => null,   // e.g. 'CP1251'; null = auto-detect
+        'skip_empty_lines' => true,
+        'comment_prefix'   => null,   // e.g. '#'
+    ],
 ];
 ```
 

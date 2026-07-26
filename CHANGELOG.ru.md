@@ -13,6 +13,23 @@
 Более раннюю историю см. на
 [странице релизов](https://github.com/aVadim483/fast-excel-laravel/releases).
 
+## 4.1.0 — 2026-07-26
+
+### Добавлено
+
+* **Чтение CSV-файлов.** `\Excel::open()` теперь читает CSV в дополнение к XLSX и устаревшему XLS. Файл,
+  который не является ни корректным XLSX (ZIP), ни XLS (OLE2), читается как CSV, поэтому весь API импорта
+  (`importModel()`, `withHeadings()`, `mapping()`, области чтения, `readRows()`, `nextRow()`, …) работает
+  одинаково. Значения CSV читаются как строки, стилей у CSV нет; запись CSV не поддерживается (экспорт
+  по-прежнему только в XLSX). См. [docs/81-reading-csv.md](docs/81-reading-csv.md).
+* **CSV-опции.** `\Excel::open()` принимает CSV-опции (`delimiter`, `enclosure`, `escape`, `encoding`,
+  `skip_empty_lines`, `comment_prefix`, `mode`) вторым аргументом, с глобальными значениями по умолчанию в
+  новой секции `csv` файла `config/fast-excel.php`.
+
+### Изменено
+
+* Требование к `avadim/fast-excel-reader` поднято до `^4.2` (добавляет CSV-ридер).
+
 ## 4.0.0 — 2026-07-25
 
 ### Добавлено

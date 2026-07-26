@@ -42,6 +42,11 @@ _Set headings for the sheet. The first row of the read area is always skipped; i
 these names are used as attribute names (in column order) instead of the values of the first row. The setting
 applies to the next import operation only._
 
+> **Naming.** This is the wrapper's name for the reader's own `withHeader()`
+> (`avadim\FastExcelReader\AbstractSheet::withHeader()`). The wrapper uses `withHeadings()` to match the
+> Laravel ecosystem convention (as in maatwebsite/excel); the underlying reader calls the same concept
+> `withHeader()`.
+
 ### Parameters
 
 * `array|null $headers`
