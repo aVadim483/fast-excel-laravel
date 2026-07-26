@@ -28,7 +28,7 @@ For earlier history see the
 
 ### Changed
 
-* Raised the `avadim/fast-excel-reader` requirement to `^4.2` (adds the CSV reader).
+* Raised the `avadim/fast-excel-reader` requirement to `^4.3` (adds the CSV reader).
 
 ## 4.0.0 - 2026-07-25
 

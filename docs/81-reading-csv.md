@@ -1,6 +1,6 @@
 # Reading CSV files
 
-Since the reader dependency `avadim/fast-excel-reader` `^4.2`, this package reads **CSV files** in addition
+Since the reader dependency `avadim/fast-excel-reader` `^4.3`, this package reads **CSV files** in addition
 to XLSX and legacy XLS.
 
 ## How it works

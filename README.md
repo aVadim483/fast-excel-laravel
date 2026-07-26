@@ -371,7 +371,7 @@ $excel = \Excel::open($file, ['delimiter' => ';', 'encoding' => 'CP1251']);
 $rows = $excel->readRows(true);
 ```
 
-CSV reading requires `avadim/fast-excel-reader` `^4.2` (installed automatically). Global defaults for the CSV
+CSV reading requires `avadim/fast-excel-reader` `^4.3` (installed automatically). Global defaults for the CSV
 options can be set in `config('fast-excel.csv')`. Note that CSV carries no cell types or styles, so every
 value is read as a string; writing CSV is not supported (export is XLSX only).
 See [Reading CSV files](/docs/81-reading-csv.md).
