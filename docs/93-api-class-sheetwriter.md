@@ -3546,6 +3546,11 @@ public function withHeadings(?array $headers = [], ?array $rowStyle = [],
 ```
 _Set headings for the sheet_
 
+> **Naming.** The wrapper uses `withHeadings()` to match the Laravel ecosystem convention (as in
+> maatwebsite/excel). The underlying writer has no `withHeader()`; it writes a header row imperatively via
+> [writeHeader()](#writeheader). `withHeadings()` instead defers the headings and writes them when the data
+> is exported.
+
 ### Parameters
 
 * `array|null $headers`

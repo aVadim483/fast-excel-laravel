@@ -54,6 +54,9 @@ class SheetReader
      * if $headers is not empty, these names are used as attribute names (in column order)
      * instead of the values of the first row
      *
+     * Named withHeadings() to match the Laravel ecosystem convention; the underlying
+     * reader calls the same concept withHeader() (AbstractSheet::withHeader()).
+     *
      * @param array|null $headers
      *
      * @return $this

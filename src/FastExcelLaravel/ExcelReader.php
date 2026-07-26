@@ -43,6 +43,7 @@ class ExcelReader
      */
     public static function open(string $file, ?array $options = []): ExcelReader
     {
+        $options = $options ?? [];
         $tempDir = $options['temp_dir'] ?? '';
         if (!$tempDir && function_exists('config')) {
             $tempDir = config('fast-excel.temp_dir') ?: '';
@@ -52,8 +53,23 @@ class ExcelReader
             // XLS is read straight from the file, no temp dir is ever used
             $book = FastExcelReader::openXls($file);
         }
-        else {
+        elseif (FastExcelReader::isXlsx($file)) {
             $book = new FastExcelReader($file, $tempDir);
+        }
+        else {
+            // Neither XLS nor XLSX signature: read as CSV. The reader factory
+            // returns a CsvBook, and CSV options (delimiter, enclosure, encoding,
+            // ...) are passed straight through $options. CSV never uses temp_dir.
+            // Global defaults from config('fast-excel.csv') fill the gaps: a
+            // per-call option wins, and a null default is skipped so the reader's
+            // own default survives.
+            if (function_exists('config')) {
+                $csvDefaults = config('fast-excel.csv');
+                if (is_array($csvDefaults)) {
+                    $options += array_filter($csvDefaults, static fn($value) => $value !== null);
+                }
+            }
+            $book = FastExcelReader::open($file, $options);
         }
 
         return new self($book);

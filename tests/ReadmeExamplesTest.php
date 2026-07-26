@@ -243,4 +243,30 @@ class ReadmeExamplesTest extends TestCase
 
         unlink($testFileName);
     }
+
+    /**
+     * Test reading CSV (README: Reading CSV files)
+     */
+    public function testReadCsv()
+    {
+        // importModel from a plain comma CSV (TestUser has a fake save())
+        $file = $this->testStorage . '/users.csv';
+        file_put_contents($file, "name,birthday\nHelen,1990-05-01\nPeter,1985-12-31\n");
+
+        $excel = Excel::open($file);
+        $result = $excel->withHeadings()->importModel(TestUser::class);
+        $this->assertInstanceOf(\avadim\FastExcelLaravel\ExcelReader::class, $result);
+        unlink($file);
+
+        // CSV options passed as the second argument (semicolon + CP1251)
+        $file = $this->testStorage . '/opts.csv';
+        file_put_contents($file, iconv('UTF-8', 'CP1251', "name;city\nОльга;Москва\n"));
+
+        $excel = Excel::open($file, ['delimiter' => ';', 'encoding' => 'CP1251']);
+        $rows = $excel->readRows(true);
+        $this->assertEquals('Ольга', $rows[2]['name']);
+        $this->assertEquals('Москва', $rows[2]['city']);
+
+        unlink($file);
+    }
 }

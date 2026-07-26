@@ -9,8 +9,9 @@
 `ExcelReader` is a thin Laravel wrapper around a **FastExcelReader** book. It does not extend a concrete
 reader; instead it **composes** an `avadim\FastExcelReader\AbstractBook` and adds the Eloquent-aware import
 helpers. Because it relies only on the shared `AbstractBook` / `AbstractSheet` public API, the same wrapper
-works for every format the reader supports — **XLSX and legacy XLS (Excel 97-2003)** — and the format is
-detected automatically from the file signature (see [Reading legacy XLS files](80-reading-xls.md)).
+works for every format the reader supports — **XLSX, legacy XLS (Excel 97-2003) and CSV** — and the format is
+detected automatically from the file content (see [Reading legacy XLS files](80-reading-xls.md) and
+[Reading CSV files](81-reading-csv.md)).
 
 Any method that is not listed below is transparently forwarded to the wrapped `AbstractBook` (see
 [Delegated methods](#delegated-methods)).
@@ -44,15 +45,19 @@ Own methods:
 ```php
 public static function open(string $file, ?array $options = []): ExcelReader
 ```
-_Open a workbook for import. The reader is selected from the file signature, so XLSX and XLS are opened the
-same way; the file extension is ignored._
+_Open a workbook for import. The format is selected from the file content, so XLSX, XLS and CSV are opened the
+same way; the file extension is ignored. A file that is neither a valid XLSX (ZIP) nor XLS (OLE2) is read as CSV._
 
 ### Parameters
 
 * `string $file`
-* `array|null $options` -- supported keys: `temp_dir` (directory for temporary files used when reading XLSX;
-  falls back to the `fast-excel.temp_dir` config value). XLS is read straight from the file and never uses a
-  temp dir.
+* `array|null $options` -- supported keys:
+  * `temp_dir` -- directory for temporary files used when reading XLSX; falls back to the
+    `fast-excel.temp_dir` config value. XLS and CSV are read straight from the file and never use a temp dir.
+  * CSV options -- `delimiter`, `enclosure`, `escape`, `encoding`, `skip_empty_lines`, `comment_prefix`,
+    `mode` (`'strict'`/`'tolerant'`). They apply only to CSV and fall back to the `fast-excel.csv` config
+    values; a per-call option wins, a `null` keeps the reader default. See
+    [Reading CSV files](81-reading-csv.md).
 
 ---
 
@@ -82,6 +87,11 @@ public function withHeadings(?array $headers = []): ExcelReader
 _Set headings for the current sheet. The first row of the read area is always skipped; if `$headers` is not
 empty, these names are used as attribute names (in column order) instead of the values of the first row.
 The setting applies to the next import operation only._
+
+> **Naming.** This is the wrapper's name for the reader's own `withHeader()`
+> (`avadim\FastExcelReader\AbstractSheet::withHeader()`). The wrapper uses `withHeadings()` to match the
+> Laravel ecosystem convention (as in maatwebsite/excel); the underlying reader calls the same concept
+> `withHeader()`.
 
 ### Parameters
 
@@ -148,8 +158,8 @@ applied to every row._
 ```php
 public function getBook(): \avadim\FastExcelReader\AbstractBook
 ```
-_Returns the wrapped book instance (an `avadim\FastExcelReader\Excel` for XLSX or
-`avadim\FastExcelReader\Xls\XlsBook` for XLS)._
+_Returns the wrapped book instance (an `avadim\FastExcelReader\Excel` for XLSX,
+`avadim\FastExcelReader\Xls\XlsBook` for XLS or `avadim\FastExcelReader\Csv\CsvBook` for CSV)._
 
 ### Parameters
 
