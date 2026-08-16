@@ -18,6 +18,7 @@ namespace **avadim\FastExcelLaravel**
 
 * [Reading legacy XLS files](80-reading-xls.md)
 * [Reading CSV files](81-reading-csv.md)
+* [Reading from a string or a stream](82-reading-from-memory.md)
 
 ---
 

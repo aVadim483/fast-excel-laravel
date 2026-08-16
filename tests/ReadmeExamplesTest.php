@@ -269,4 +269,43 @@ class ReadmeExamplesTest extends TestCase
 
         unlink($file);
     }
+
+    /**
+     * Test reading from a string and from a stream (README: Reading from a String or a Stream)
+     */
+    public function testReadFromStringAndStream()
+    {
+        $testFileName = $this->testStorage . '/from_string.xlsx';
+        $excel = Excel::create('Users');
+        $excel->sheet()->writeData([
+            ['name', 'birthday'],
+            ['Helen', '1990-05-01'],
+        ]);
+        $excel->save($testFileName);
+
+        // A workbook held in a string (here: the body of a file, as Storage::get() returns it)
+        $excel = Excel::openString(file_get_contents($testFileName));
+        $result = $excel->withHeadings()->importModel(TestUser::class);
+        $this->assertInstanceOf(\avadim\FastExcelLaravel\ExcelReader::class, $result);
+        unlink($testFileName);
+
+        // A workbook behind a stream, with CSV options
+        $file = $this->testStorage . '/stream.csv';
+        file_put_contents($file, "name;birthday\nHelen;1990-05-01\n");
+
+        $stream = fopen($file, 'rb');
+        $excel = Excel::openStream($stream, ['delimiter' => ';']);
+        $rows = $excel->readRows(true);
+        fclose($stream);
+
+        $this->assertEquals('Helen', $rows[2]['name']);
+        unlink($file);
+
+        // The temporary copies live until the script ends, remove them right away
+        $excel = null;
+        gc_collect_cycles();
+        foreach (glob($this->testStorage . '/app/tmp/fast-excel/excel_reader_*.tmp') ?: [] as $tempFile) {
+            @unlink($tempFile);
+        }
+    }
 }

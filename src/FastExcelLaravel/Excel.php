@@ -38,4 +38,30 @@ class Excel
     {
         return ExcelReader::open($file, $options);
     }
+
+    /**
+     * Open a workbook held in a string for import
+     *
+     * @param string $content
+     * @param array|null $options
+     *
+     * @return ExcelReader
+     */
+    public static function openString(string $content, ?array $options = []): ExcelReader
+    {
+        return ExcelReader::openString($content, $options);
+    }
+
+    /**
+     * Open a workbook from an open stream resource for import
+     *
+     * @param resource $stream
+     * @param array|null $options
+     *
+     * @return ExcelReader
+     */
+    public static function openStream($stream, ?array $options = []): ExcelReader
+    {
+        return ExcelReader::openStream($stream, $options);
+    }
 }

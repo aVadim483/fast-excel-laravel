@@ -27,6 +27,8 @@ Any method that is not listed below is transparently forwarded to the wrapped `A
 Own methods:
 
 * [open()](#open) -- Open a workbook (XLSX or XLS) for import
+* [openString()](#openstring) -- Open a workbook held in a string for import
+* [openStream()](#openstream) -- Open a workbook from an open stream resource for import
 * [sheet()](#sheet) -- Returns the current or a named sheet as a SheetReader
 * [withHeadings()](#withheadings) -- Set headings for the current sheet
 * [mapping()](#mapping) -- Set mapping callback for the current sheet
@@ -58,6 +60,46 @@ same way; the file extension is ignored. A file that is neither a valid XLSX (ZI
     `mode` (`'strict'`/`'tolerant'`). They apply only to CSV and fall back to the `fast-excel.csv` config
     values; a per-call option wins, a `null` keeps the reader default. See
     [Reading CSV files](81-reading-csv.md).
+
+---
+
+## openString()
+
+---
+
+```php
+public static function openString(string $content, ?array $options = []): ExcelReader
+```
+_Open a workbook held in a string. The content is written to a temporary file and then opened by
+[open()](#open), so the format is detected from the bytes (XLSX, XLS or CSV) and the same options apply. The
+temporary file is removed when the script ends; it is created in the `temp_dir` option directory, then
+`config('fast-excel.temp_dir')`, then `storage_path('app/tmp/fast-excel')`. Throws
+`\avadim\FastExcelReader\Exception` for an empty string. See
+[Reading from a string or a stream](82-reading-from-memory.md)._
+
+### Parameters
+
+* `string $content`
+* `array|null $options` -- same keys as [open()](#open)
+
+---
+
+## openStream()
+
+---
+
+```php
+public static function openStream($stream, ?array $options = []): ExcelReader
+```
+_Open a workbook from an open readable stream resource. The stream is copied into a temporary file from its
+current position (it is not rewound, so non-rewindable streams work) and then opened by [open()](#open). The
+caller keeps the ownership of the stream: it is **not** closed here. Throws
+`\avadim\FastExcelReader\Exception` if the argument is not a resource or the stream produces no data._
+
+### Parameters
+
+* `resource $stream`
+* `array|null $options` -- same keys as [open()](#open)
 
 ---
 
@@ -210,7 +252,7 @@ $excel->mapping($callback)->from('A2')->readRows();
 ```
 
 The full list of delegated methods — `getSheetNames()`, `getSheet()`, `selectSheet()`, `setReadArea()`,
-`from()`, `readCells()`, `readColumns()`, `readCallback()`, `getDefinedNames()`, `setDateFormat()`,
+`from()`, `readCells()`, `readColumns()`, `readCallback()`, `getDefinedNames()`, `getProperties()` (XLSX only), `setDateFormat()`,
 `dateFormatter()`, image and style helpers, and so on — is documented in the underlying **FastExcelReader**
 library: https://github.com/aVadim483/fast-excel-reader#readme
 

@@ -44,6 +44,7 @@ Using this library, you can export arrays, collections and models to a XLSX-file
   * Supports data validations and conditional formatting
 * Reading
   * Reads XLSX, legacy XLS (Excel 97-2003) and CSV; the spreadsheet format is detected automatically from the file
+  * Reads a workbook from a file, from a string or from any stream (a Laravel disk, a database blob, a URL)
   * Import workbooks and worksheets to Eloquent models very quickly and with minimal memory usage
   * Automatic field detection from imported table headers
   * Import huge files very fast, and using a minimum of memory
@@ -101,6 +102,7 @@ Jump To:
   * [Mapping Import Data](#mapping-import-data)
   * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
   * [Reading CSV files](#reading-csv-files)
+  * [Reading from a String or a Stream](#reading-from-a-string-or-a-stream)
 * [Configuration](#configuration)
 * [More Features](#more-features)
 * [Do you want to support FastExcelLaravel?](#do-you-want-to-support-fastexcellaravel)
@@ -371,10 +373,33 @@ $excel = \Excel::open($file, ['delimiter' => ';', 'encoding' => 'CP1251']);
 $rows = $excel->readRows(true);
 ```
 
-CSV reading requires `avadim/fast-excel-reader` `^4.3` (installed automatically). Global defaults for the CSV
+CSV reading needs no extra package — the reader is installed with this one. Global defaults for the CSV
 options can be set in `config('fast-excel.csv')`. Note that CSV carries no cell types or styles, so every
 value is read as a string; writing CSV is not supported (export is XLSX only).
 See [Reading CSV files](/docs/81-reading-csv.md).
+
+### Reading from a String or a Stream
+
+A workbook does not have to be a file on the local disk. ```Excel::openString()``` reads it from a string,
+```Excel::openStream()``` — from any open stream resource. The format is detected from the content in exactly
+the same way, so XLSX, XLS and CSV all work, and the whole import API is available afterwards.
+
+```php
+// A workbook held in a string (a database blob, an HTTP response body, Storage::get(), ...)
+$excel = \Excel::openString($report->file_body);
+$excel->withHeadings()->importModel(User::class);
+
+// A workbook behind a stream (a Laravel disk, fopen('https://...'), php://memory, ...)
+// The stream is copied to a temporary file in chunks, so it never has to fit in memory
+$stream = \Storage::disk('s3')->readStream('users.csv');
+$excel = \Excel::openStream($stream, ['delimiter' => ';']);
+$rows = $excel->readRows(true);
+fclose($stream);
+```
+
+Both methods accept the same options as ```Excel::open()```. The temporary copy is removed when the script
+ends, and the stream is not closed — the caller keeps its ownership.
+See [Reading from a string or a stream](/docs/82-reading-from-memory.md).
 
 ## Configuration
 

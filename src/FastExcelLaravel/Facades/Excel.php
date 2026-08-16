@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Facade;
  *
  * @method static \avadim\FastExcelLaravel\ExcelWriter create($sheets = null, ?array $options = [])
  * @method static \avadim\FastExcelLaravel\ExcelReader open(string $file, ?array $options = [])
+ * @method static \avadim\FastExcelLaravel\ExcelReader openString(string $content, ?array $options = [])
+ * @method static \avadim\FastExcelLaravel\ExcelReader openStream($stream, ?array $options = [])
  *
  * @see \avadim\FastExcelLaravel\Excel
  */

@@ -5,6 +5,7 @@ namespace avadim\FastExcelLaravel;
 use avadim\FastExcelReader\AbstractBook;
 use avadim\FastExcelReader\AbstractSheet;
 use avadim\FastExcelReader\Excel as FastExcelReader;
+use avadim\FastExcelReader\Exception;
 
 /**
  * Laravel wrapper around a FastExcelReader book.
@@ -73,6 +74,160 @@ class ExcelReader
         }
 
         return new self($book);
+    }
+
+    /**
+     * Open a spreadsheet held in a string, e.g. a database blob, an HTTP response
+     * body or a file read from a Laravel disk with Storage::get()
+     *
+     * The content is written to a temporary file and then opened by open(), so the
+     * format is detected from the bytes (XLSX, XLS or CSV) and every option open()
+     * accepts works here too. The temporary file is removed on script shutdown.
+     *
+     * @param string $content Raw bytes of the workbook
+     * @param array|null $options Same options as open()
+     *
+     * @return ExcelReader
+     */
+    public static function openString(string $content, ?array $options = []): ExcelReader
+    {
+        if ($content === '') {
+            throw new Exception('Cannot open an empty string as a spreadsheet');
+        }
+        $tempFile = self::makeTempFile($options);
+        if (file_put_contents($tempFile, $content) === false) {
+            @unlink($tempFile);
+            throw new Exception('Cannot write the spreadsheet content to temporary file "' . $tempFile . '"');
+        }
+
+        return self::openTempFile($tempFile, $options);
+    }
+
+    /**
+     * Open a spreadsheet from an open stream resource, e.g. a remote file or a
+     * Laravel disk read: \Excel::openStream(Storage::disk('s3')->readStream($path))
+     *
+     * The stream is copied into a temporary file from its current position (without
+     * seeking, so non-rewindable streams such as HTTP wrappers work) and then opened
+     * by open(). The caller keeps ownership of the stream, it is not closed here;
+     * the temporary file is removed on script shutdown.
+     *
+     * @param resource $stream An open readable stream resource
+     * @param array|null $options Same options as open()
+     *
+     * @return ExcelReader
+     */
+    public static function openStream($stream, ?array $options = []): ExcelReader
+    {
+        if (!is_resource($stream)) {
+            throw new Exception('openStream() expects an open stream resource');
+        }
+        $tempFile = self::makeTempFile($options);
+        $out = fopen($tempFile, 'wb');
+        if (!$out) {
+            @unlink($tempFile);
+            throw new Exception('Cannot open temporary file "' . $tempFile . '" for writing');
+        }
+        stream_copy_to_stream($stream, $out);
+        fclose($out);
+
+        // touch() in makeTempFile() has already put a zero size for this path into
+        // the stat cache, so it must be dropped before the size is checked
+        clearstatcache(true, $tempFile);
+        if (filesize($tempFile) === 0) {
+            @unlink($tempFile);
+            throw new Exception('The stream produced no data');
+        }
+
+        return self::openTempFile($tempFile, $options);
+    }
+
+    /**
+     * Create an empty temporary file for the content of openString()/openStream()
+     * and return its name
+     *
+     * The directory is the one used for every temporary file of the package: the
+     * 'temp_dir' option, then config('fast-excel.temp_dir'), then
+     * storage_path('app/tmp/fast-excel') inside Laravel, and the system temporary
+     * directory outside of it.
+     *
+     * @param array|null $options
+     *
+     * @return string
+     */
+    protected static function makeTempFile(?array $options = []): string
+    {
+        $tempDir = (string)($options['temp_dir'] ?? '');
+        if (!$tempDir && function_exists('config')) {
+            $tempDir = (string)config('fast-excel.temp_dir');
+        }
+        if (!$tempDir && function_exists('storage_path')) {
+            $tempDir = storage_path('app/tmp/fast-excel');
+        }
+        if (!$tempDir) {
+            $tempDir = sys_get_temp_dir();
+        }
+        if (!is_dir($tempDir) && !@mkdir($tempDir, 0777, true) && !is_dir($tempDir)) {
+            throw new Exception('Cannot create directory "' . $tempDir . '"');
+        }
+        self::cleanupTempDir($tempDir);
+
+        $tempFile = $tempDir . DIRECTORY_SEPARATOR . uniqid('excel_reader_', true) . '.tmp';
+        if (!touch($tempFile) || !is_writable($tempFile)) {
+            throw new Exception('Temporary directory "' . $tempDir . '" is not writable');
+        }
+
+        return $tempFile;
+    }
+
+    /**
+     * Open a temporary file created by openString()/openStream() and schedule its
+     * removal
+     *
+     * Nothing owns this file - the reader keeps reading it while the book is alive -
+     * so it is removed when the script ends, and right away if opening fails.
+     *
+     * @param string $tempFile
+     * @param array|null $options
+     *
+     * @return ExcelReader
+     */
+    protected static function openTempFile(string $tempFile, ?array $options = []): ExcelReader
+    {
+        // The file has just been created and filled, so the size cached by touch()
+        // must be dropped: the readers check filesize() to reject empty files
+        clearstatcache(true, $tempFile);
+        register_shutdown_function(static function () use ($tempFile) {
+            if (is_file($tempFile)) {
+                @unlink($tempFile);
+            }
+        });
+
+        try {
+            return self::open($tempFile, $options);
+        }
+        catch (\Throwable $e) {
+            @unlink($tempFile);
+            throw $e;
+        }
+    }
+
+    /**
+     * Remove stale temporary files (older than 24 hours) left after failed runs,
+     * as ExcelWriter does for the same directory
+     *
+     * @param string $tempDir
+     *
+     * @return void
+     */
+    protected static function cleanupTempDir(string $tempDir): void
+    {
+        $expired = time() - 86400;
+        foreach (glob($tempDir . DIRECTORY_SEPARATOR . 'excel_reader_*.tmp') ?: [] as $file) {
+            if (is_file($file) && filemtime($file) < $expired) {
+                @unlink($file);
+            }
+        }
     }
 
     /**
