@@ -148,8 +148,8 @@ _Wraps a sheet owned by an [ExcelReader](94-api-class-excelreader.md). Created i
 
 Every reading method not listed above is forwarded to the wrapped `AbstractSheet` via `__call`, e.g.
 `name()`, `nextRow()`, `setReadArea()`, `setReadAreaColumns()`, `from()`, `readCells()`, `readColumns()`,
-`readFirstRow()`, `getMergedCells()`, `countRows()` / `countColumns()`, the dimension helpers, and the image
-and style helpers. A sheet returned by a delegated call is re-wrapped so fluent chains keep working.
+`readFirstRow()`, `getMergedCells()`, `getHyperlinks()` (XLSX only), `countRows()` / `countColumns()`, the dimension
+helpers, and the image and style helpers. A sheet returned by a delegated call is re-wrapped so fluent chains keep working.
 
 The full list is documented in the underlying **FastExcelReader** library:
 https://github.com/aVadim483/fast-excel-reader#readme

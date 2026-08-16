@@ -34,6 +34,7 @@
 * [getImageFiles()](#getimagefiles) -- Get list of all loaded image files
 * [getMetadata()](#getmetadata) -- Get metadata
 * [getSharedStrings()](#getsharedstrings) -- Get the shared strings table
+* [getSharedStringsRefCount()](#getsharedstringsrefcount) -- Total number of shared string references
 * [getSheet()](#getsheet) -- Alias of sheet()
 * [getSheets()](#getsheets) -- Returns all sheets
 * [getWriter()](#getwriter) -- Get the writer instance
@@ -48,10 +49,14 @@
 * [setActiveSheet()](#setactivesheet) -- Set active (default) sheet by case-insensitive name
 * [setAuthor()](#setauthor) -- Set the author of the document
 * [setCompany()](#setcompany) -- Set the company of the document
+* [setDefaultDateFormat()](#setdefaultdateformat) -- Set the default date format of the workbook
+* [setDefaultDateTimeFormat()](#setdefaultdatetimeformat) -- Set the default date and time format of the workbook
 * [setDefaultFont()](#setdefaultfont) -- Set default font options
 * [setDefaultFontName()](#setdefaultfontname) -- Set default font name
+* [setDefaultFormat()](#setdefaultformat) -- Set the format of the workbook which overrides the format of the locale
 * [setDefaultLocale()](#setdefaultlocale) -- Set default locale from the current environment
 * [setDefaultStyle()](#setdefaultstyle) -- Set default style
+* [setDefaultTimeFormat()](#setdefaulttimeformat) -- Set the default time format of the workbook
 * [setDescription()](#setdescription) -- Set the description of the document
 * [setFileName()](#setfilename) -- Sets default filename for saving
 * [setKeywords()](#setkeywords) -- Set the keywords of the document
@@ -570,6 +575,21 @@ _None_
 
 ---
 
+## getSharedStringsRefCount()
+
+---
+
+```php
+public function getSharedStringsRefCount(): int
+```
+_Total number of shared string references (the `count` attribute of `<sst>`)_
+
+### Parameters
+
+_None_
+
+---
+
 ## getSheet()
 
 ---
@@ -781,6 +801,36 @@ _Set the company of the document_
 
 ---
 
+## setDefaultDateFormat()
+
+---
+
+```php
+public function setDefaultDateFormat(string $format): avadim\FastExcelWriter\Excel
+```
+_Set the default date format of the workbook (the `'@date'` style). It overrides the format of the locale._
+
+### Parameters
+
+* `string $format` -- e.g. `'DD.MM.YYYY'`
+
+---
+
+## setDefaultDateTimeFormat()
+
+---
+
+```php
+public function setDefaultDateTimeFormat(string $format): avadim\FastExcelWriter\Excel
+```
+_Set the default date and time format of the workbook (the `'@datetime'` style, used for `DateTime` values)._
+
+### Parameters
+
+* `string $format` -- e.g. `'DD.MM.YYYY HH:MM'`
+
+---
+
 ## setDefaultFont()
 
 ---
@@ -811,6 +861,22 @@ _Set default font name_
 
 ---
 
+## setDefaultFormat()
+
+---
+
+```php
+public function setDefaultFormat(string $formatName, string $format): avadim\FastExcelWriter\Excel
+```
+_Set a format of the workbook which overrides the format of the locale._
+
+### Parameters
+
+* `string $formatName` -- format name, e.g. `'date'`, `'@date'`, `'DATETIME'`
+* `string $format` -- format pattern, e.g. `'DD.MM.YYYY'`
+
+---
+
 ## setDefaultLocale()
 
 ---
@@ -838,6 +904,21 @@ _Set default style_
 ### Parameters
 
 * `array $style`
+
+---
+
+## setDefaultTimeFormat()
+
+---
+
+```php
+public function setDefaultTimeFormat(string $format): avadim\FastExcelWriter\Excel
+```
+_Set the default time format of the workbook (the `'@time'` style)._
+
+### Parameters
+
+* `string $format` -- e.g. `'HH:MM'`
 
 ---
 

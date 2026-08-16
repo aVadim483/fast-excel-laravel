@@ -13,6 +13,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For earlier history see the
 [releases page](https://github.com/aVadim483/fast-excel-laravel/releases).
 
+## 4.2.0 - 2026-08-16
+
+### Added
+
+* **Reading a workbook from a string or a stream.** `\Excel::openString($content)` opens a workbook held in a
+  string (a database blob, an HTTP response body, `Storage::get()`, …) and `\Excel::openStream($stream)` opens
+  one behind any open stream resource (`Storage::readStream()`, `fopen('https://…')`, `php://memory`, …). The
+  content is copied into a temporary file and opened exactly like `\Excel::open()`, so the format is still
+  detected from the content (XLSX, XLS, CSV), the same options apply, and the whole import API works
+  afterwards. The temporary copy is removed when the script ends; the stream is not closed. See
+  [docs/82-reading-from-memory.md](docs/82-reading-from-memory.md).
+
+### Changed
+
+* Requirement for `avadim/fast-excel-writer` raised to `^6.16` (fixes for pre-calculated formula results, a
+  memory leak in long-running processes, cell values longer than 32767 characters and broken XML from
+  unescaped characters in data validations and conditional formatting).
+* Requirement for `avadim/fast-excel-reader` raised to `^4.4.1`. The writer escapes control characters as
+  `_xHHHH_`, and only this version of the reader decodes them back, so an export/import round trip keeps such
+  values (a cell with a CR used to be read back as the literal text `_x000D_`).
+
 ## 4.1.0 - 2026-07-26
 
 ### Added
