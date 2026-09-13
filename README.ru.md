@@ -77,7 +77,7 @@ $excel = \Excel::create();
 // export model...
 $excel->sheet()->withHeadings()->exportModel(Users::class);
 
-// and save XLSX-file to default storage
+// and save XLSX-file to the storage directory (relative to storage_path())
 $excel->saveTo('path/file.xlsx');
 
 // or save file to specified disk
@@ -124,6 +124,9 @@ $sheet->exportModel(Users::class);
 
 $excel->saveTo('path/file.xlsx');
 ```
+`saveTo()` отсчитывает путь от `storage_path()` и создаёт недостающие каталоги. Чтобы сохранить файл
+на диск Storage, используйте `store()`, чтобы сохранить по произвольному пути — `save()`.
+
 Следующий код запишет в первую строку имена полей со стилями (шрифт и границы), а затем экспортирует все данные модели User
 
 ```php

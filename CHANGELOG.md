@@ -13,6 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For earlier history see the
 [releases page](https://github.com/aVadim483/fast-excel-laravel/releases).
 
+## Unreleased
+
+### Added
+
+* `saveTo()` accepts a second argument `$overWrite` (default `true`), like `save()` does: with `false` an
+  exception is thrown if the file already exists.
+
+### Fixed
+
+* `saveTo()` now creates missing directories. Previously `saveTo('reports/2026/users.xlsx')` threw
+  `Directory "…" for output file is not exist` unless `storage/reports/2026` had been created beforehand.
+* `saveTo('')` throws a clear `File path is empty` exception instead of a `ZipArchive` error.
+* The README wrongly said that `saveTo()` saves to the default storage. The path is resolved relative to
+  `storage_path()`, not to the root of a Storage disk (in Laravel 11+ the `local` disk root is
+  `storage/app/private`). Use `store()` to save to a disk and `save()` to save to an arbitrary path.
+
 ## 4.2.0 - 2026-08-16
 
 ### Added

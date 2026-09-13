@@ -2,6 +2,7 @@
 
 namespace avadim\FastExcelLaravel;
 
+use avadim\FastExcelWriter\Exceptions\ExceptionFile;
 use avadim\FastExcelWriter\Options;
 use avadim\FastExcelWriter\Sheet;
 use Illuminate\Support\Collection;
@@ -131,15 +132,29 @@ class ExcelWriter  extends \avadim\FastExcelWriter\Excel
     }
 
     /**
-     * Save file to local storage
+     * Save file to the storage directory
+     *
+     * The path is always resolved relative to storage_path() (not to a Storage disk root),
+     * missing directories are created. The path is not sanitized, so do not pass unchecked
+     * user input. Use save() to save to an arbitrary path or store() to save to a disk
      *
      * @param string $filePath
+     * @param bool|null $overWrite
      *
      * @return bool
      */
-    public function saveTo(string $filePath): bool
+    public function saveTo(string $filePath, ?bool $overWrite = true): bool
     {
-        return $this->save(storage_path($filePath));
+        if ($filePath === '') {
+            ExceptionFile::throwNew('File path is empty');
+        }
+        $fileName = storage_path($filePath);
+        $dir = dirname($fileName);
+        if (!is_dir($dir) && !@mkdir($dir, 0777, true) && !is_dir($dir)) {
+            ExceptionFile::throwNew('Unable to create directory "%s"', $dir);
+        }
+
+        return $this->save($fileName, $overWrite);
     }
 
     /**

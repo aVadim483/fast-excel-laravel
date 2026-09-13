@@ -45,7 +45,7 @@
 * [protect()](#protect) -- Protect workbook
 * [removeSheet()](#removesheet) -- Removes sheet by index or name of sheet.
 * [save()](#save) -- Save generated XLSX-file
-* [saveTo()](#saveto) -- Save file to local storage
+* [saveTo()](#saveto) -- Save file to the storage directory (relative to storage_path())
 * [setActiveSheet()](#setactivesheet) -- Set active (default) sheet by case-insensitive name
 * [setAuthor()](#setauthor) -- Set the author of the document
 * [setCompany()](#setcompany) -- Set the company of the document
@@ -746,13 +746,15 @@ _Save generated XLSX-file_
 ---
 
 ```php
-public function saveTo(string $filePath): bool
+public function saveTo(string $filePath, ?bool $overWrite = true): bool
 ```
-_Save file to local storage_
+_Save file to the storage directory. The path is always resolved relative to storage_path() (not to a Storage
+disk root), missing directories are created. Use save() to save to an arbitrary path or store() to save to a disk_
 
 ### Parameters
 
 * `string $filePath`
+* `bool|null $overWrite`
 
 ---
 
