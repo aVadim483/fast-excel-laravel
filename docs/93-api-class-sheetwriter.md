@@ -1378,11 +1378,13 @@ _None_
 public function exportModel($model, $rowStyle, 
                             ?array $colStyles = null): SheetWriter
 ```
-_Export a model to the sheet_
+_Export a model to the sheet. Accepts a model class name or instance (all records are exported), an Eloquent
+builder, a query builder or a relation (only the matching records are exported). Records are read lazily
+through cursor()_
 
 ### Parameters
 
-* `$model`
+* `string|Model|EloquentBuilder|QueryBuilder|Relation $model`
 * `array|Style|null $rowStyle`
 * `array|null $colStyles`
 
@@ -3551,6 +3553,9 @@ _Set headings for the sheet_
 > [writeHeader()](#writeheader). `withHeadings()` instead defers the headings and writes them when the data
 > is exported.
 
+Without `$headers` the headings are the keys of the first record; if a [mapping()](#mapping) is set, the keys
+of the mapped record are used. With `$headers` as `key => title` pairs the rows are rearranged by the keys.
+
 ### Parameters
 
 * `array|null $headers`
@@ -3680,11 +3685,12 @@ _Write several values into cells of one row_
 public function writeData($data, $rowStyle, 
                           ?array $colStyles = null): SheetWriter
 ```
-_Write data to the sheet_
+_Write data to the sheet. Accepts any iterable (array, Collection, LazyCollection, Model::cursor(), a generator, ...)
+or a callable that returns an iterable; any other value throws InvalidArgumentException_
 
 ### Parameters
 
-* `$data`
+* `iterable|callable $data`
 * `array|Style|null $rowStyle`
 * `array|null $colStyles`
 

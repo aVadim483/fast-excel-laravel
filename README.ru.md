@@ -127,6 +127,14 @@ $excel->saveTo('path/file.xlsx');
 `saveTo()` отсчитывает путь от `storage_path()` и создаёт недостающие каталоги. Чтобы сохранить файл
 на диск Storage, используйте `store()`, чтобы сохранить по произвольному пути — `save()`.
 
+Вместо класса модели можно передать запрос (Eloquent builder, `DB::table()` или связь) — тогда выгружаются
+только подходящие под него записи
+
+```php
+// Export users older than 35, records are read lazily with cursor()
+$sheet->exportModel(User::where('age', '>', 35)->orderBy('name'));
+```
+
 Следующий код запишет в первую строку имена полей со стилями (шрифт и границы), а затем экспортирует все данные модели User
 
 ```php
@@ -186,6 +194,10 @@ $sheet->writeData(function () {
         yield $user;
     }
 });
+
+$sheet = $excel->makeSheet('Cursor');
+// Any iterable works: LazyCollection, Model::cursor(), a generator...
+$sheet->writeData(User::where('age', '>', 35)->cursor());
 
 ```
 

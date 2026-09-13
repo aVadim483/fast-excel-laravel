@@ -445,11 +445,12 @@ _Download generated file to client (send to browser)_
 public function exportModel($model, ?array $rowStyle = null, 
                             ?array $cellStyles = null): ExcelWriter
 ```
-_Export a model to the current sheet_
+_Export a model to the current sheet. Accepts a model class name or instance, an Eloquent builder, a query
+builder or a relation, see [SheetWriter::exportModel()](93-api-class-sheetwriter.md#exportmodel)_
 
 ### Parameters
 
-* `$model`
+* `string|Model|EloquentBuilder|QueryBuilder|Relation $model`
 * `array|null $rowStyle`
 * `array|null $cellStyles`
 
@@ -1220,11 +1221,12 @@ _None_
 ```php
 public function writeData($data): ExcelWriter
 ```
-_Write data to the current sheet_
+_Write data to the current sheet. Accepts any iterable (array, Collection, LazyCollection, Model::cursor(),
+a generator, ...) or a callable that returns an iterable_
 
 ### Parameters
 
-* `$data`
+* `iterable|callable $data`
 
 ---
 

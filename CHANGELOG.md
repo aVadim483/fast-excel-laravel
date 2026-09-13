@@ -19,6 +19,11 @@ For earlier history see the
 
 * `saveTo()` accepts a second argument `$overWrite` (default `true`), like `save()` does: with `false` an
   exception is thrown if the file already exists.
+* `exportModel()` accepts a query as well as a model class: an Eloquent builder (`User::where(...)`), a query
+  builder (`DB::table(...)`) or a relation (`$user->posts()`). Only the matching records are exported, still
+  lazily through `cursor()`. Previously such a call failed with
+  `Non-static method ... cursor() cannot be called statically`; any other unsupported value now throws
+  `InvalidArgumentException`.
 
 ### Fixed
 
@@ -28,6 +33,12 @@ For earlier history see the
 * The README wrongly said that `saveTo()` saves to the default storage. The path is resolved relative to
   `storage_path()`, not to the root of a Storage disk (in Laravel 11+ the `local` disk root is
   `storage/app/private`). Use `store()` to save to a disk and `save()` to save to an arbitrary path.
+* `writeData()` accepted only arrays, `Collection` and callables and silently wrote nothing for anything else:
+  a `LazyCollection`, `Model::cursor()` or a generator produced an empty sheet. It now accepts any iterable;
+  a value that is neither iterable nor callable (e.g. `null` or a string) throws `InvalidArgumentException`.
+* `withHeadings()` without explicit headings combined with a `mapping()` that renames keys lost all the data:
+  the headings were taken from the record before mapping and the mapped rows were then rearranged by those old
+  keys, so only the heading row was written. The headings are now taken from the mapped record.
 
 ## 4.2.0 - 2026-08-16
 

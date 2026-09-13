@@ -4,7 +4,10 @@ namespace avadim\FastExcelLaravel;
 
 use avadim\FastExcelWriter\Sheet;
 use avadim\FastExcelWriter\Style\Style;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class SheetWriter extends Sheet
 {
@@ -102,7 +105,10 @@ class SheetWriter extends Sheet
     /**
      * Write data to the sheet
      *
-     * @param $data
+     * Accepts any iterable (array, Collection, LazyCollection, Model::cursor(), a generator, ...)
+     * or a callable that returns an iterable
+     *
+     * @param iterable|callable $data
      * @param array|Style|null $rowStyle
      * @param array|null $colStyles
      *
@@ -110,29 +116,29 @@ class SheetWriter extends Sheet
      */
     public function writeData($data, $rowStyle = null, ?array $colStyles = null): SheetWriter
     {
-        if (is_array($data) || ($data instanceof Collection)) {
-            foreach ($data as $record) {
-                if ($this->dataRowCount === 0 && $this->headers) {
-                    $this->_writeHeader($record);
-                }
-                if ($this->mappingCallback) {
-                    $record = call_user_func($this->mappingCallback, $record);
-                }
-                $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
-                ++$this->dataRowCount;
-            }
+        if (is_iterable($data)) {
+            $records = $data;
         }
         elseif (is_callable($data)) {
-            foreach ($data() as $record) {
-                if ($this->dataRowCount === 0 && $this->headers) {
-                    $this->_writeHeader($record);
-                }
-                if ($this->mappingCallback) {
-                    $record = call_user_func($this->mappingCallback, $record);
-                }
-                $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
-                ++$this->dataRowCount;
+            $records = $data();
+        }
+        else {
+            throw new \InvalidArgumentException(sprintf(
+                'writeData() expects an iterable or a callable, %s given', get_debug_type($data)
+            ));
+        }
+
+        foreach ($records as $record) {
+            // map first: automatic headings must be taken from the keys of the mapped record,
+            // because the following rows are rearranged by these keys
+            if ($this->mappingCallback) {
+                $record = call_user_func($this->mappingCallback, $record);
             }
+            if ($this->dataRowCount === 0 && $this->headers) {
+                $this->_writeHeader($record);
+            }
+            $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
+            ++$this->dataRowCount;
         }
 
         return $this;
@@ -141,7 +147,11 @@ class SheetWriter extends Sheet
     /**
      * Export a model to the sheet
      *
-     * @param $model
+     * Accepts a model class name or instance (all records are exported), an Eloquent builder,
+     * a query builder or a relation (only the matching records are exported). Records are read
+     * lazily through cursor()
+     *
+     * @param string|Model|EloquentBuilder|QueryBuilder|Relation $model
      * @param array|Style|null $rowStyle
      * @param array|null $colStyles
      *
@@ -149,11 +159,19 @@ class SheetWriter extends Sheet
      */
     public function exportModel($model, $rowStyle = null, ?array $colStyles = null): SheetWriter
     {
-        $this->writeData(static function() use ($model) {
-            foreach ($model::cursor() as $user) {
-                yield $user;
-            }
-        }, $rowStyle, $colStyles);
+        if (is_string($model) || $model instanceof Model) {
+            $records = $model::cursor();
+        }
+        elseif ($model instanceof EloquentBuilder || $model instanceof QueryBuilder || $model instanceof Relation) {
+            $records = $model->cursor();
+        }
+        else {
+            throw new \InvalidArgumentException(sprintf(
+                'exportModel() expects a model class, a model, a query builder or a relation, %s given',
+                get_debug_type($model)
+            ));
+        }
+        $this->writeData($records, $rowStyle, $colStyles);
         $this->headers = [];
 
         return $this;
