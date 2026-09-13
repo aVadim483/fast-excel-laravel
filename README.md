@@ -100,6 +100,7 @@ Jump To:
 * [Import Data](#import-data)
   * [Import a Model](#import-a-model)
   * [Mapping Import Data](#mapping-import-data)
+  * [Import Performance](#import-performance)
   * [Advanced Usage for Data Import](#advanced-usage-for-data-import)
   * [Reading CSV files](#reading-csv-files)
   * [Reading from a String or a Stream](#reading-from-a-string-or-a-stream)
@@ -349,6 +350,23 @@ $excel->mapping(['B' => 'name', 'C' => 'birthday', 'D' => 'random'])->importMode
 // Define top left cell only (shorter way)
 $excel->importModel(User::class, 'B5', ['B' => 'name', 'C' => 'birthday', 'D' => 'random']);
 ```
+
+### Import Performance
+
+`importModel()` imports the whole sheet in a single database transaction: the database does not commit every
+row separately, which makes the import much faster, and if any row fails, nothing is imported.
+
+For large files you can also insert rows in batches: the rows are collected and inserted with one query per
+batch instead of one `save()` per row
+
+```php
+// Insert rows in batches of 1000
+$excel->withHeadings()->importModel(User::class, batchSize: 1000);
+```
+With `batchSize` the models are not saved one by one, so Eloquent events (`creating`, `saved`, observers, ...)
+are not fired and the models do not get their ids; attribute mutators and casts are applied and timestamps are
+set. Keep the batch size moderate: the number of placeholders in one query is limited by the database
+(65535 in MySQL, 32766 in SQLite), so `batchSize × number of columns` must stay below that limit.
 
 ### Advanced Usage for Data Import
 See detailed documentation for avadim/fast-excel-reader here: https://github.com/aVadim483/fast-excel-reader/tree/master#readme

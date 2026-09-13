@@ -302,17 +302,18 @@ class ExcelReader
     }
 
     /**
-     * Import data into a model from the current sheet
+     * Import data into a model from the current sheet in a single transaction
      *
      * @param string $modelClass
      * @param string|bool|null $address
      * @param array|bool|null $columns
+     * @param int|null $batchSize Insert rows in batches of this size instead of saving each model
      *
      * @return $this
      */
-    public function importModel(string $modelClass, $address = null, $columns = null): ExcelReader
+    public function importModel(string $modelClass, $address = null, $columns = null, ?int $batchSize = null): ExcelReader
     {
-        $this->sheet()->importModel($modelClass, $address, $columns);
+        $this->sheet()->importModel($modelClass, $address, $columns, $batchSize);
 
         return $this;
     }

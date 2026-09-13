@@ -74,16 +74,19 @@ _Set a mapping for the sheet. Accepts a callback `function (array $row): array` 
 ---
 
 ```php
-public function importModel($modelClass, $address = null, $columns = null): SheetReader
+public function importModel($modelClass, $address = null, $columns = null, ?int $batchSize = null): SheetReader
 ```
-_Load models from the sheet into the database: a new model is filled and saved for each row
-(`fill()` + `save()`)._
+_Load models from the sheet into the database. The whole import runs in a single transaction on the model's
+connection: if any row fails, nothing is imported. By default a new model is filled and saved for each row
+(`fill()` + `save()`); with `$batchSize` the filled attributes are inserted in batches, one query per batch
+(Eloquent events are not fired, models get no ids; mutators, casts and timestamps are applied)._
 
 ```php
 importModel(User::class)                 // whole sheet
 importModel(User::class, 'B:D')          // read columns B:D
 importModel(User::class, 'B3')           // read area starting at B3
 importModel(User::class, 'B3', true)     // read area starting at B3, first row as field names
+importModel(User::class, batchSize: 1000) // insert rows in batches of 1000
 ```
 
 ### Parameters
@@ -91,6 +94,7 @@ importModel(User::class, 'B3', true)     // read area starting at B3, first row 
 * `$modelClass`
 * `$address`
 * `$columns`
+* `int|null $batchSize` -- insert rows in batches of this size instead of saving each model; must be at least 1
 
 ---
 
