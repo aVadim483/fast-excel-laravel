@@ -3551,6 +3551,9 @@ _Set headings for the sheet_
 > [writeHeader()](#writeheader). `withHeadings()` instead defers the headings and writes them when the data
 > is exported.
 
+Without `$headers` the headings are the keys of the first record; if a [mapping()](#mapping) is set, the keys
+of the mapped record are used. With `$headers` as `key => title` pairs the rows are rearranged by the keys.
+
 ### Parameters
 
 * `array|null $headers`

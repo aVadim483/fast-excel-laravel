@@ -125,11 +125,13 @@ class SheetWriter extends Sheet
         }
 
         foreach ($records as $record) {
-            if ($this->dataRowCount === 0 && $this->headers) {
-                $this->_writeHeader($record);
-            }
+            // map first: automatic headings must be taken from the keys of the mapped record,
+            // because the following rows are rearranged by these keys
             if ($this->mappingCallback) {
                 $record = call_user_func($this->mappingCallback, $record);
+            }
+            if ($this->dataRowCount === 0 && $this->headers) {
+                $this->_writeHeader($record);
             }
             $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
             ++$this->dataRowCount;

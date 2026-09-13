@@ -31,6 +31,9 @@ For earlier history see the
 * `writeData()` accepted only arrays, `Collection` and callables and silently wrote nothing for anything else:
   a `LazyCollection`, `Model::cursor()` or a generator produced an empty sheet. It now accepts any iterable;
   a value that is neither iterable nor callable (e.g. `null` or a string) throws `InvalidArgumentException`.
+* `withHeadings()` without explicit headings combined with a `mapping()` that renames keys lost all the data:
+  the headings were taken from the record before mapping and the mapped rows were then rearranged by those old
+  keys, so only the heading row was written. The headings are now taken from the mapped record.
 
 ## 4.2.0 - 2026-08-16
 

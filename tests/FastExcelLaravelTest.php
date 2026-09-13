@@ -290,6 +290,41 @@ class FastExcelLaravelTest extends TestCase
         $excel->sheet()->writeData('not data');
     }
 
+    public function testExportHeadingsWithMapping()
+    {
+        $testFileName = 'test_headings_mapping.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()
+            ->withHeadings()
+            ->mapping(fn($record) => ['ID' => $record['id'], 'Name' => strtoupper($record['name'])])
+            ->writeData($this->getDataArray());
+        $excel->saveTo($testFileName);
+
+        $this->read(storage_path($testFileName));
+        $this->assertCount(4, $this->cells);
+        $this->assertEquals(['ID', 'Name'], $this->getValues('A1', 'B1'));
+        $this->assertEquals([3, 'CAPTAIN JACK SPARROW'], $this->getValues('A4', 'B4'));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testExportCustomHeadingsWithMapping()
+    {
+        $testFileName = 'test_custom_headings_mapping.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()
+            ->withHeadings(['name' => 'Full name', 'id' => 'Number'])
+            ->mapping(fn($record) => ['id' => $record['id'] * 10, 'name' => $record['name']])
+            ->writeData($this->getDataArray());
+        $excel->saveTo($testFileName);
+
+        $this->read(storage_path($testFileName));
+        $this->assertEquals(['Full name', 'Number'], $this->getValues('A1', 'B1'));
+        $this->assertEquals(['James Bond', 10], $this->getValues('A2', 'B2'));
+
+        $this->endExportTest($testFileName);
+    }
+
     public function testExportMultipleSheets()
     {
         $testFileName = 'test5.xlsx';
