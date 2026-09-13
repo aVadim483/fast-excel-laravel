@@ -553,6 +553,65 @@ class FastExcelLaravelTest extends TestCase
         $this->endExportTest($testFileName);
     }
 
+    public function testSaveToCreatesDirectories()
+    {
+        $testFileName = 'saveto_dir/nested/test_saveto_dir.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->writeData($this->getDataArray());
+
+        try {
+            $this->assertTrue($excel->saveTo($testFileName));
+            $this->read(storage_path($testFileName));
+            $this->assertCount(count($this->getDataArray()), $this->cells);
+        }
+        finally {
+            $this->endExportTest($testFileName);
+            @rmdir(storage_path('saveto_dir/nested'));
+            @rmdir(storage_path('saveto_dir'));
+        }
+    }
+
+    public function testSaveToLeadingSlashIsRelativeToStorage()
+    {
+        $testFileName = 'test_saveto_slash.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->writeData($this->getDataArray());
+
+        $this->assertTrue($excel->saveTo('/' . $testFileName));
+        $this->assertTrue(file_exists(storage_path($testFileName)));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testSaveToWithoutOverwrite()
+    {
+        $testFileName = 'test_saveto_overwrite.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->writeData($this->getDataArray());
+        $this->assertTrue($excel->saveTo($testFileName));
+
+        $excel = Excel::create();
+        $excel->sheet()->writeData($this->getDataArray());
+
+        $this->expectException(\avadim\FastExcelWriter\Exceptions\ExceptionFile::class);
+        $this->expectExceptionMessage('already exists');
+        try {
+            $excel->saveTo($testFileName, false);
+        }
+        finally {
+            $this->endExportTest($testFileName);
+        }
+    }
+
+    public function testSaveToEmptyPath()
+    {
+        $excel = Excel::create();
+
+        $this->expectException(\avadim\FastExcelWriter\Exceptions\ExceptionFile::class);
+        $this->expectExceptionMessage('File path is empty');
+        $excel->saveTo('');
+    }
+
     public function testDownloadResponse()
     {
         $excel = Excel::create('Users');
