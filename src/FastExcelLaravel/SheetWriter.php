@@ -4,7 +4,6 @@ namespace avadim\FastExcelLaravel;
 
 use avadim\FastExcelWriter\Sheet;
 use avadim\FastExcelWriter\Style\Style;
-use Illuminate\Support\Collection;
 
 class SheetWriter extends Sheet
 {
@@ -102,7 +101,10 @@ class SheetWriter extends Sheet
     /**
      * Write data to the sheet
      *
-     * @param $data
+     * Accepts any iterable (array, Collection, LazyCollection, Model::cursor(), a generator, ...)
+     * or a callable that returns an iterable
+     *
+     * @param iterable|callable $data
      * @param array|Style|null $rowStyle
      * @param array|null $colStyles
      *
@@ -110,29 +112,27 @@ class SheetWriter extends Sheet
      */
     public function writeData($data, $rowStyle = null, ?array $colStyles = null): SheetWriter
     {
-        if (is_array($data) || ($data instanceof Collection)) {
-            foreach ($data as $record) {
-                if ($this->dataRowCount === 0 && $this->headers) {
-                    $this->_writeHeader($record);
-                }
-                if ($this->mappingCallback) {
-                    $record = call_user_func($this->mappingCallback, $record);
-                }
-                $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
-                ++$this->dataRowCount;
-            }
+        if (is_iterable($data)) {
+            $records = $data;
         }
         elseif (is_callable($data)) {
-            foreach ($data() as $record) {
-                if ($this->dataRowCount === 0 && $this->headers) {
-                    $this->_writeHeader($record);
-                }
-                if ($this->mappingCallback) {
-                    $record = call_user_func($this->mappingCallback, $record);
-                }
-                $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
-                ++$this->dataRowCount;
+            $records = $data();
+        }
+        else {
+            throw new \InvalidArgumentException(sprintf(
+                'writeData() expects an iterable or a callable, %s given', get_debug_type($data)
+            ));
+        }
+
+        foreach ($records as $record) {
+            if ($this->dataRowCount === 0 && $this->headers) {
+                $this->_writeHeader($record);
             }
+            if ($this->mappingCallback) {
+                $record = call_user_func($this->mappingCallback, $record);
+            }
+            $this->writeRow($this->_toArray($record), $rowStyle, $colStyles);
+            ++$this->dataRowCount;
         }
 
         return $this;

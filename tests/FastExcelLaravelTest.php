@@ -239,6 +239,57 @@ class FastExcelLaravelTest extends TestCase
         $this->endExportTest($testFileName);
     }
 
+    public function testExportIterables()
+    {
+        $data = $this->getDataArray();
+        $generator = (static function () use ($data) {
+            foreach ($data as $record) {
+                yield $record;
+            }
+        })();
+        $sources = [
+            'lazy collection' => \Illuminate\Support\LazyCollection::make($data),
+            'generator' => $generator,
+            'iterator' => new \ArrayIterator($data),
+        ];
+        foreach ($sources as $label => $source) {
+            $testFileName = 'test_iterable.xlsx';
+            $excel = $this->startExportTest($testFileName);
+            $excel->sheet()->writeData($source);
+            $excel->saveTo($testFileName);
+
+            $this->read(storage_path($testFileName));
+            $this->assertCount(count($data), $this->cells, $label);
+            $this->assertEquals(array_values($data[2]), $this->getValues('A3', 'B3', 'C3', 'D3'), $label);
+
+            $this->endExportTest($testFileName);
+        }
+    }
+
+    public function testExportModelCursor()
+    {
+        FakeModel::query()->insert($this->getDataArray());
+        $testFileName = 'test_cursor.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->writeData(FakeModel::where('id', '>', 1)->cursor());
+        $excel->saveTo($testFileName);
+
+        $this->read(storage_path($testFileName));
+        $this->assertCount(2, $this->cells);
+        $this->assertEquals('Ellen Louise Ripley', $this->getValue('D1'));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testWriteDataInvalidArgument()
+    {
+        $excel = Excel::create();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('string given');
+        $excel->sheet()->writeData('not data');
+    }
+
     public function testExportMultipleSheets()
     {
         $testFileName = 'test5.xlsx';

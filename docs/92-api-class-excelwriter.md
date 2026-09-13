@@ -1220,11 +1220,12 @@ _None_
 ```php
 public function writeData($data): ExcelWriter
 ```
-_Write data to the current sheet_
+_Write data to the current sheet. Accepts any iterable (array, Collection, LazyCollection, Model::cursor(),
+a generator, ...) or a callable that returns an iterable_
 
 ### Parameters
 
-* `$data`
+* `iterable|callable $data`
 
 ---
 

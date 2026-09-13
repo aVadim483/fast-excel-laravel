@@ -3680,11 +3680,12 @@ _Write several values into cells of one row_
 public function writeData($data, $rowStyle, 
                           ?array $colStyles = null): SheetWriter
 ```
-_Write data to the sheet_
+_Write data to the sheet. Accepts any iterable (array, Collection, LazyCollection, Model::cursor(), a generator, ...)
+or a callable that returns an iterable; any other value throws InvalidArgumentException_
 
 ### Parameters
 
-* `$data`
+* `iterable|callable $data`
 * `array|Style|null $rowStyle`
 * `array|null $colStyles`
 

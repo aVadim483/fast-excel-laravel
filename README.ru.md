@@ -187,6 +187,10 @@ $sheet->writeData(function () {
     }
 });
 
+$sheet = $excel->makeSheet('Cursor');
+// Any iterable works: LazyCollection, Model::cursor(), a generator...
+$sheet->writeData(User::where('age', '>', 35)->cursor());
+
 ```
 
 ### Маппинг экспортируемых данных

@@ -138,6 +138,34 @@ class ReadmeExamplesTest extends TestCase
     }
 
     /**
+     * Test export from a model cursor (README: Export Any Collections and Arrays)
+     */
+    public function testExportCursor()
+    {
+        \Schema::create('test_users', function ($table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->integer('age');
+        });
+        \DB::table('test_users')->insert([
+            ['name' => 'Helen', 'age' => 30],
+            ['name' => 'Peter', 'age' => 40],
+        ]);
+        $testFileName = $this->testStorage . '/export_cursor.xlsx';
+
+        $excel = Excel::create('Cursor');
+        $sheet = $excel->sheet();
+        $sheet->writeData(TestUser::where('age', '>', 35)->cursor());
+        $excel->save($testFileName);
+
+        $rows = ExcelReader::open($testFileName)->readRows();
+        $this->assertCount(1, $rows);
+        $this->assertEquals('Peter', $rows[1]['B']);
+
+        unlink($testFileName);
+    }
+
+    /**
      * Test mapping (README: Mapping Export Data)
      */
     public function testExportMapping()

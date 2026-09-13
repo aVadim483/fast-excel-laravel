@@ -28,6 +28,9 @@ For earlier history see the
 * The README wrongly said that `saveTo()` saves to the default storage. The path is resolved relative to
   `storage_path()`, not to the root of a Storage disk (in Laravel 11+ the `local` disk root is
   `storage/app/private`). Use `store()` to save to a disk and `save()` to save to an arbitrary path.
+* `writeData()` accepted only arrays, `Collection` and callables and silently wrote nothing for anything else:
+  a `LazyCollection`, `Model::cursor()` or a generator produced an empty sheet. It now accepts any iterable;
+  a value that is neither iterable nor callable (e.g. `null` or a string) throws `InvalidArgumentException`.
 
 ## 4.2.0 - 2026-08-16
 
