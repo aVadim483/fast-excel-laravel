@@ -105,34 +105,89 @@ class SheetReader
      *      loadModels(User::class, 'B:D') -- read data from columns B:D
      *      loadModels(User::class, 'B3') -- read data from area started at B3
      *      loadModels(User::class, 'B3', true) -- read data from area started at B3 and the first row used as a field names
+     *      loadModels(User::class, batchSize: 1000) -- insert rows in batches of 1000
+     *
+     * The whole import runs in a single transaction on the model's connection, so if any row fails,
+     * nothing is imported. By default a new model is filled and saved for each row; with $batchSize
+     * the filled attributes are inserted in batches, one query per batch: Eloquent events are not
+     * fired and models get no ids, but mutators, casts and timestamps are applied
      *
      * @param $modelClass
      * @param $address
      * @param $columns
+     * @param int|null $batchSize
      *
      * @return $this
      */
-    public function importModel($modelClass, $address = null, $columns = null): SheetReader
+    public function importModel($modelClass, $address = null, $columns = null, ?int $batchSize = null): SheetReader
     {
+        if ($batchSize !== null && $batchSize < 1) {
+            throw new \InvalidArgumentException('Batch size must be at least 1, ' . $batchSize . ' given');
+        }
         if ($address && is_string($address)) {
             $this->sheet->setReadArea($address);
         }
-        foreach ($this->sheet->nextRow($columns, $this->resultMode) as $rowData) {
+        try {
             /** @var Model $model */
             $model = new $modelClass;
-            if ($this->customHeaders) {
-                $rowData = $this->_applyCustomHeaders($rowData);
-            }
-            if ($this->mappingCallback) {
-                $rowData = call_user_func($this->mappingCallback, $rowData);
-            }
-            $model->fill($rowData);
-            $model->save();
+            $model->getConnection()->transaction(function () use ($modelClass, $columns, $batchSize) {
+                $batch = [];
+                $batchKeys = null;
+                foreach ($this->sheet->nextRow($columns, $this->resultMode) as $rowData) {
+                    /** @var Model $model */
+                    $model = new $modelClass;
+                    if ($this->customHeaders) {
+                        $rowData = $this->_applyCustomHeaders($rowData);
+                    }
+                    if ($this->mappingCallback) {
+                        $rowData = call_user_func($this->mappingCallback, $rowData);
+                    }
+                    $model->fill($rowData);
+                    if (!$batchSize) {
+                        $model->save();
+                        continue;
+                    }
+
+                    $attributes = $this->_batchAttributes($model);
+                    $keys = array_keys($attributes);
+                    // insert() takes the columns from the first row, so a row with another set of
+                    // attributes starts a new batch
+                    if ($batch && (count($batch) >= $batchSize || $keys !== $batchKeys)) {
+                        $modelClass::query()->insert($batch);
+                        $batch = [];
+                    }
+                    $batch[] = $attributes;
+                    $batchKeys = $keys;
+                }
+                if ($batch) {
+                    $modelClass::query()->insert($batch);
+                }
+            });
         }
-        $this->resultMode = 0;
-        $this->customHeaders = [];
+        finally {
+            $this->resultMode = 0;
+            $this->customHeaders = [];
+        }
 
         return $this;
+    }
+
+    /**
+     * Attributes of a filled model ready for a batch insert (with timestamps, sorted by name)
+     *
+     * @param Model $model
+     *
+     * @return array
+     */
+    protected function _batchAttributes(Model $model): array
+    {
+        if ($model->usesTimestamps()) {
+            $model->updateTimestamps();
+        }
+        $attributes = $model->getAttributes();
+        ksort($attributes);
+
+        return $attributes;
     }
 
     /**

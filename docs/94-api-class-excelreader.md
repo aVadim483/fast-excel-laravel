@@ -162,16 +162,18 @@ _Set a mapping for the current sheet. Accepts a callback `function (array $row):
 ---
 
 ```php
-public function importModel(string $modelClass, $address = null, $columns = null): ExcelReader
+public function importModel(string $modelClass, $address = null, $columns = null, ?int $batchSize = null): ExcelReader
 ```
-_Import data from the current sheet into a model: a new model is filled and saved for each row
-(`fill()` + `save()`)._
+_Import data from the current sheet into a model in a single transaction: a new model is filled and saved for
+each row (`fill()` + `save()`), or the rows are inserted in batches when `$batchSize` is given, see
+[SheetReader::importModel()](95-api-class-sheetreader.md#importmodel)._
 
 ### Parameters
 
 * `string $modelClass`
 * `string|bool|null $address` -- read area, e.g. `'B:D'`, `'B4'`, `'B4:D7'`
 * `array|bool|null $columns`
+* `int|null $batchSize` -- insert rows in batches of this size instead of saving each model
 
 ---
 

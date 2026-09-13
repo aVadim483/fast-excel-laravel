@@ -301,6 +301,26 @@ class ReadmeExamplesTest extends TestCase
     }
 
     /**
+     * Test batch import (README: Import Performance)
+     */
+    public function testImportInBatches()
+    {
+        \Schema::create('test_users', function ($table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('birthday');
+        });
+        $file = $this->testStorage . '/batch_users.csv';
+        file_put_contents($file, "name,birthday\nHelen,1990-05-01\nPeter,1985-12-31\nAnna,1975-03-15\n");
+
+        $excel = Excel::open($file);
+        $excel->withHeadings()->importModel(TestUser::class, batchSize: 1000);
+
+        $this->assertEquals(['Helen', 'Peter', 'Anna'], \DB::table('test_users')->orderBy('id')->pluck('name')->all());
+        unlink($file);
+    }
+
+    /**
      * Test reading CSV (README: Reading CSV files)
      */
     public function testReadCsv()

@@ -524,6 +524,66 @@ class FastExcelLaravelTest extends TestCase
         $this->assertEquals('Captain Jack Sparrow', $result[7]['B']);
     }
 
+    public function testImportModelIsAtomic()
+    {
+        $excel = Excel::open(storage_path('test_model.xlsx'));
+        FakeModel::$storage = [];
+        try {
+            $excel->withHeadings()->mapping(function ($record) {
+                if ($record['name'] === 'Captain Jack Sparrow') {
+                    throw new \RuntimeException('Bad row');
+                }
+                return $record;
+            })->importModel(FakeModel::class);
+            $this->fail('Exception expected');
+        }
+        catch (\RuntimeException $e) {
+            $this->assertEquals('Bad row', $e->getMessage());
+        }
+
+        // the first two rows were saved, but the transaction was rolled back
+        $this->assertCount(2, FakeModel::$storage);
+        $this->assertEquals(0, FakeModel::query()->count());
+    }
+
+    public function testImportModelInBatches()
+    {
+        $excel = Excel::open(storage_path('test_model.xlsx'));
+        FakeModel::$storage = [];
+        $excel->withHeadings()->importModel(FakeModel::class, batchSize: 2);
+
+        // rows are inserted with queries, models are not saved one by one
+        $this->assertCount(0, FakeModel::$storage);
+        $records = FakeModel::query()->orderBy('id')->get();
+        $this->assertEquals(['James Bond', 'Ellen Louise Ripley', 'Captain Jack Sparrow'], $records->pluck('name')->all());
+        $this->assertNotNull($records[0]->created_at);
+        $this->assertNotNull($records[0]->updated_at);
+    }
+
+    public function testImportModelInBatchesWithDifferentAttributes()
+    {
+        $excel = Excel::open(storage_path('test_model.xlsx'));
+        $excel->withHeadings()->mapping(function ($record) {
+            $result = ['name' => $record['name']];
+            if ($record['name'] === 'Ellen Louise Ripley') {
+                $result['foo'] = 'alien';
+            }
+            return $result;
+        })->importModel(FakeModel::class, batchSize: 10);
+
+        $records = FakeModel::query()->orderBy('id')->get();
+        $this->assertEquals(['James Bond', 'Ellen Louise Ripley', 'Captain Jack Sparrow'], $records->pluck('name')->all());
+        $this->assertEquals([null, 'alien', null], $records->pluck('foo')->all());
+    }
+
+    public function testImportModelInvalidBatchSize()
+    {
+        $excel = Excel::open(storage_path('test_model.xlsx'));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $excel->withHeadings()->importModel(FakeModel::class, batchSize: 0);
+    }
+
 
     public function testImportModelFromXls()
     {

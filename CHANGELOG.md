@@ -24,6 +24,21 @@ For earlier history see the
   lazily through `cursor()`. Previously such a call failed with
   `Non-static method ... cursor() cannot be called statically`; any other unsupported value now throws
   `InvalidArgumentException`.
+* `importModel()` accepts a `batchSize` argument: `importModel(User::class, batchSize: 1000)` inserts the rows
+  in batches, one query per batch, instead of saving each model. In this mode Eloquent events are not fired
+  and the models get no ids; attribute mutators, casts and timestamps are applied.
+
+### Changed
+
+* `importModel()` runs the whole import in a single transaction on the model's connection. The database no
+  longer commits every row separately, so the import is much faster, and it is atomic: if any row fails,
+  nothing is imported (previously the rows before the failing one stayed in the database). Measured on 10,000
+  rows (6 columns, median of 3 runs): MySQL 8.4 with default settings 13.3 s → 2.7 s (5×), a file SQLite
+  database 35.3 s → 1.3 s (27×); with `batchSize: 1000` the same import takes 0.8 s and 0.7 s (17× and 52×).
+  An in-memory SQLite database has nothing to flush to disk and gets no gain from the transaction alone.
+* `ExcelWriter::saveTo()`, `SheetReader::importModel()` and `ExcelReader::importModel()` got a new optional
+  parameter. Calls are not affected, but a subclass that overrides one of these methods must add the parameter
+  to its signature.
 
 ### Fixed
 
