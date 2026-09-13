@@ -36,6 +36,9 @@ For earlier history see the
   rows (6 columns, median of 3 runs): MySQL 8.4 with default settings 13.3 s → 2.7 s (5×), a file SQLite
   database 35.3 s → 1.3 s (27×); with `batchSize: 1000` the same import takes 0.8 s and 0.7 s (17× and 52×).
   An in-memory SQLite database has nothing to flush to disk and gets no gain from the transaction alone.
+* `ExcelWriter::saveTo()`, `SheetReader::importModel()` and `ExcelReader::importModel()` got a new optional
+  parameter. Calls are not affected, but a subclass that overrides one of these methods must add the parameter
+  to its signature.
 
 ### Fixed
 
