@@ -127,6 +127,14 @@ $excel->saveTo('path/file.xlsx');
 `saveTo()` resolves the path relative to `storage_path()` and creates missing directories. To save the file
 to a Storage disk use `store()`, to save it to an arbitrary path use `save()`.
 
+Instead of a model class you can pass a query (an Eloquent builder, `DB::table()` or a relation), then only the
+matching records are exported
+
+```php
+// Export users older than 35, records are read lazily with cursor()
+$sheet->exportModel(User::where('age', '>', 35)->orderBy('name'));
+```
+
 The following code will write the field names and styles (font and borders) to the first row, and then export all the data of the User model
 
 ```php

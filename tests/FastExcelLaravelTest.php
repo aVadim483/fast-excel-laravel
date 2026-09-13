@@ -325,6 +325,64 @@ class FastExcelLaravelTest extends TestCase
         $this->endExportTest($testFileName);
     }
 
+    public function testExportModelEloquentBuilder()
+    {
+        FakeModel::query()->insert($this->getDataArray());
+        $testFileName = 'test_export_builder.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->withHeadings()->exportModel(FakeModel::where('integer', 982630)->orderBy('id', 'desc'));
+        $excel->saveTo($testFileName);
+
+        $this->read(storage_path($testFileName));
+        // heading row + 2 matching records
+        $this->assertCount(3, $this->cells);
+        $this->assertEquals('name', $this->getValue('D1'));
+        $this->assertEquals('Ellen Louise Ripley', $this->getValue('D2'));
+        $this->assertEquals('James Bond', $this->getValue('D3'));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testExportModelQueryBuilder()
+    {
+        FakeModel::query()->insert($this->getDataArray());
+        $testFileName = 'test_export_query_builder.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->exportModel(\DB::table('fake_models')->select('id', 'name')->where('id', 3));
+        $excel->saveTo($testFileName);
+
+        $this->read(storage_path($testFileName));
+        $this->assertCount(1, $this->cells);
+        $this->assertEquals([3, 'Captain Jack Sparrow'], $this->getValues('A1', 'B1'));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testExportModelRelation()
+    {
+        FakeModel::query()->insert($this->getDataArray());
+        $parent = new FakeModel(['integer' => 300]);
+        $testFileName = 'test_export_relation.xlsx';
+        $excel = $this->startExportTest($testFileName);
+        $excel->sheet()->exportModel($parent->hasMany(FakeModel::class, 'integer', 'integer'));
+        $excel->saveTo($testFileName);
+
+        $this->read(storage_path($testFileName));
+        $this->assertCount(1, $this->cells);
+        $this->assertEquals('Captain Jack Sparrow', $this->getValue('D1'));
+
+        $this->endExportTest($testFileName);
+    }
+
+    public function testExportModelInvalidArgument()
+    {
+        $excel = Excel::create();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Illuminate\Support\Collection given');
+        $excel->sheet()->exportModel(collect());
+    }
+
     public function testExportMultipleSheets()
     {
         $testFileName = 'test5.xlsx';

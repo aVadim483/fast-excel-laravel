@@ -19,6 +19,11 @@ For earlier history see the
 
 * `saveTo()` accepts a second argument `$overWrite` (default `true`), like `save()` does: with `false` an
   exception is thrown if the file already exists.
+* `exportModel()` accepts a query as well as a model class: an Eloquent builder (`User::where(...)`), a query
+  builder (`DB::table(...)`) or a relation (`$user->posts()`). Only the matching records are exported, still
+  lazily through `cursor()`. Previously such a call failed with
+  `Non-static method ... cursor() cannot be called statically`; any other unsupported value now throws
+  `InvalidArgumentException`.
 
 ### Fixed
 

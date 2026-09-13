@@ -1378,11 +1378,13 @@ _None_
 public function exportModel($model, $rowStyle, 
                             ?array $colStyles = null): SheetWriter
 ```
-_Export a model to the sheet_
+_Export a model to the sheet. Accepts a model class name or instance (all records are exported), an Eloquent
+builder, a query builder or a relation (only the matching records are exported). Records are read lazily
+through cursor()_
 
 ### Parameters
 
-* `$model`
+* `string|Model|EloquentBuilder|QueryBuilder|Relation $model`
 * `array|Style|null $rowStyle`
 * `array|null $colStyles`
 

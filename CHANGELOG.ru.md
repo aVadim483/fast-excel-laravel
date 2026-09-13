@@ -19,6 +19,11 @@
 
 * `saveTo()` принимает второй аргумент `$overWrite` (по умолчанию `true`), как и `save()`: при `false`
   выбрасывается исключение, если файл уже существует.
+* `exportModel()` принимает не только класс модели, но и запрос: Eloquent builder (`User::where(...)`), query
+  builder (`DB::table(...)`) или связь (`$user->posts()`). Выгружаются только подходящие записи, по-прежнему
+  лениво через `cursor()`. Раньше такой вызов падал с
+  `Non-static method ... cursor() cannot be called statically`; на прочие неподдерживаемые значения теперь
+  выбрасывается `InvalidArgumentException`.
 
 ### Исправлено
 

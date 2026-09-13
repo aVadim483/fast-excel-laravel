@@ -142,15 +142,7 @@ class ReadmeExamplesTest extends TestCase
      */
     public function testExportCursor()
     {
-        \Schema::create('test_users', function ($table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->integer('age');
-        });
-        \DB::table('test_users')->insert([
-            ['name' => 'Helen', 'age' => 30],
-            ['name' => 'Peter', 'age' => 40],
-        ]);
+        $this->createTestUsers();
         $testFileName = $this->testStorage . '/export_cursor.xlsx';
 
         $excel = Excel::create('Cursor');
@@ -159,10 +151,46 @@ class ReadmeExamplesTest extends TestCase
         $excel->save($testFileName);
 
         $rows = ExcelReader::open($testFileName)->readRows();
-        $this->assertCount(1, $rows);
+        $this->assertCount(2, $rows);
         $this->assertEquals('Peter', $rows[1]['B']);
+        $this->assertEquals('Anna', $rows[2]['B']);
 
         unlink($testFileName);
+    }
+
+    /**
+     * Test export of a query (README: Export a Model)
+     */
+    public function testExportQuery()
+    {
+        $this->createTestUsers();
+        $testFileName = $this->testStorage . '/export_query.xlsx';
+
+        $excel = Excel::create('Users');
+        $sheet = $excel->sheet();
+        $sheet->exportModel(TestUser::where('age', '>', 35)->orderBy('name'));
+        $excel->save($testFileName);
+
+        $rows = ExcelReader::open($testFileName)->readRows();
+        $this->assertCount(2, $rows);
+        $this->assertEquals('Anna', $rows[1]['B']);
+        $this->assertEquals('Peter', $rows[2]['B']);
+
+        unlink($testFileName);
+    }
+
+    protected function createTestUsers(): void
+    {
+        \Schema::create('test_users', function ($table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->integer('age');
+        });
+        \DB::table('test_users')->insert([
+            ['name' => 'Helen', 'age' => 30],
+            ['name' => 'Peter', 'age' => 40],
+            ['name' => 'Anna', 'age' => 50],
+        ]);
     }
 
     /**

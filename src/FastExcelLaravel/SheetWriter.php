@@ -4,6 +4,10 @@ namespace avadim\FastExcelLaravel;
 
 use avadim\FastExcelWriter\Sheet;
 use avadim\FastExcelWriter\Style\Style;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class SheetWriter extends Sheet
 {
@@ -143,7 +147,11 @@ class SheetWriter extends Sheet
     /**
      * Export a model to the sheet
      *
-     * @param $model
+     * Accepts a model class name or instance (all records are exported), an Eloquent builder,
+     * a query builder or a relation (only the matching records are exported). Records are read
+     * lazily through cursor()
+     *
+     * @param string|Model|EloquentBuilder|QueryBuilder|Relation $model
      * @param array|Style|null $rowStyle
      * @param array|null $colStyles
      *
@@ -151,11 +159,19 @@ class SheetWriter extends Sheet
      */
     public function exportModel($model, $rowStyle = null, ?array $colStyles = null): SheetWriter
     {
-        $this->writeData(static function() use ($model) {
-            foreach ($model::cursor() as $user) {
-                yield $user;
-            }
-        }, $rowStyle, $colStyles);
+        if (is_string($model) || $model instanceof Model) {
+            $records = $model::cursor();
+        }
+        elseif ($model instanceof EloquentBuilder || $model instanceof QueryBuilder || $model instanceof Relation) {
+            $records = $model->cursor();
+        }
+        else {
+            throw new \InvalidArgumentException(sprintf(
+                'exportModel() expects a model class, a model, a query builder or a relation, %s given',
+                get_debug_type($model)
+            ));
+        }
+        $this->writeData($records, $rowStyle, $colStyles);
         $this->headers = [];
 
         return $this;
